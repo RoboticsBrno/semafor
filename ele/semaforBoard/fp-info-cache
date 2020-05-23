@@ -1,4 +1,4 @@
-18631619419323232
+18634799954580032
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -82047,12 +82047,26 @@ ESP-01
 8
 8
 semaforBoard
+Helceletka
+
+
+0
+0
+0
+semaforBoard
 PinHeader_1x05_P2.54mm_Vertical
 Through hole straight pin header, 1x05, 2.54mm pitch, single row
 Through hole pin header THT 1x05 2.54mm single row
 0
 5
 5
+semaforBoard
+Robotarna
+
+
+0
+0
+0
 semaforBoard
 USB_A_CNCTech_1001-011-01101_Horizontal
 USB type A Plug, Horizontal, http://cnctech.us/pdfs/1001-011-01101.pdf

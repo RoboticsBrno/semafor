@@ -700,4 +700,19 @@ F 3 "http://www.fairchildsemi.com/ds/BC/BC817.pdf" H 3150 6750 50  0001 L CNN
 	1    3150 6750
 	1    0    0    -1  
 $EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5ED38F5D
+P 6550 4250
+F 0 "#PWR?" H 6550 4100 50  0001 C CNN
+F 1 "+3V3" H 6565 4423 50  0000 C CNN
+F 2 "" H 6550 4250 50  0001 C CNN
+F 3 "" H 6550 4250 50  0001 C CNN
+	1    6550 4250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6550 4250 6550 4450
+Wire Wire Line
+	6550 4450 6050 4450
 $EndSCHEMATC

@@ -226,17 +226,6 @@ $EndComp
 Wire Wire Line
 	3200 2950 3200 3000
 $Comp
-L Transistor_BJT:BC547 Q1
-U 1 1 5EC78B86
-P 3150 4650
-F 0 "Q1" H 3341 4696 50  0000 L CNN
-F 1 "BC547" H 3341 4605 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 3350 4575 50  0001 L CIN
-F 3 "http://www.fairchildsemi.com/ds/BC/BC547.pdf" H 3150 4650 50  0001 L CNN
-	1    3150 4650
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:R R5
 U 1 1 5EC79B6C
 P 3500 4350
@@ -333,17 +322,6 @@ LED-A
 Wire Wire Line
 	2450 4650 2550 4650
 $Comp
-L Transistor_BJT:BC547 Q2
-U 1 1 5EC878AF
-P 3150 5700
-F 0 "Q2" H 3341 5746 50  0000 L CNN
-F 1 "BC547" H 3341 5655 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 3350 5625 50  0001 L CIN
-F 3 "http://www.fairchildsemi.com/ds/BC/BC547.pdf" H 3150 5700 50  0001 L CNN
-	1    3150 5700
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:R R6
 U 1 1 5EC878B5
 P 3500 5400
@@ -439,17 +417,6 @@ Text GLabel 2450 5700 0    50   Input ~ 0
 LED-B
 Wire Wire Line
 	2450 5700 2550 5700
-$Comp
-L Transistor_BJT:BC547 Q3
-U 1 1 5EC8ABCE
-P 3150 6750
-F 0 "Q3" H 3341 6796 50  0000 L CNN
-F 1 "BC547" H 3341 6705 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 3350 6675 50  0001 L CIN
-F 3 "http://www.fairchildsemi.com/ds/BC/BC547.pdf" H 3150 6750 50  0001 L CNN
-	1    3150 6750
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:R R7
 U 1 1 5EC8ABD4
@@ -700,4 +667,37 @@ Wire Wire Line
 Connection ~ 2350 2000
 Wire Wire Line
 	2350 2000 2850 2000
+$Comp
+L Transistor_BJT:BC817 Q1
+U 1 1 5ECFBB46
+P 3150 4650
+F 0 "Q1" H 3341 4696 50  0000 L CNN
+F 1 "BC817" H 3341 4605 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 4575 50  0001 L CIN
+F 3 "http://www.fairchildsemi.com/ds/BC/BC817.pdf" H 3150 4650 50  0001 L CNN
+	1    3150 4650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_BJT:BC817 Q2
+U 1 1 5ED02F93
+P 3150 5700
+F 0 "Q2" H 3341 5746 50  0000 L CNN
+F 1 "BC817" H 3341 5655 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 5625 50  0001 L CIN
+F 3 "http://www.fairchildsemi.com/ds/BC/BC817.pdf" H 3150 5700 50  0001 L CNN
+	1    3150 5700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_BJT:BC817 Q3
+U 1 1 5ED0523C
+P 3150 6750
+F 0 "Q3" H 3341 6796 50  0000 L CNN
+F 1 "BC817" H 3341 6705 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 6675 50  0001 L CIN
+F 3 "http://www.fairchildsemi.com/ds/BC/BC817.pdf" H 3150 6750 50  0001 L CNN
+	1    3150 6750
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
