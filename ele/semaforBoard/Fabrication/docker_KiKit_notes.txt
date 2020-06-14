@@ -1,0 +1,10 @@
+
+#Zavoláním následujícího příkazu ve složce, ve které je Dockerfile, se vytvoří image s tag kikit_docker_image
+docker image build -t kikit_docker_image .
+
+docker run -it -v D:/pcb:/pcb kikit_docker_image
+
+kikit panelize extractboard --sourcearea 132 67 189 111 semaforBoard.kicad_pcb single.kicad_pcb
+
+kikit panelize grid --space 2.5 --gridsize 4 1 --tabwidth 8 --tabheight 3 --htabs 1 --vtabs 2 --
+mousebites 0.5 1 0.25 --radius 1 --tolerance 30 single.kicad_pcb panel1.kicad_pcb
