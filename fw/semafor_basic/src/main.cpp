@@ -26,6 +26,7 @@ uint8_t ledPins[] = {1, 2, 3}; //R(TX), G, B(RX)
 
 uint32_t prevCycle = 0;
 uint16_t periodCycle = 20;
+uint16_t debounce = 1000;
 
 
 void printInfo() {
@@ -71,22 +72,40 @@ void loop() {
             case 0: //monopoly
                 static uint32_t changeDelay = 0;
                 static uint32_t lastChange = 0;
-                static bool lightState = 0; //0-red, 1-green
+                static bool lightStateRG = 0; //0-red, 1-green
                 if(millis() > (lastChange + changeDelay)) {
                     lastChange = millis();
                     changeDelay = 1000 * random(stateVector.monopolyDelayMin, stateVector.monopolyDelayMax);
 
-                    lightState = !lightState;
-                    digitalWrite(ledPins[0], !lightState);
-                    digitalWrite(ledPins[1], lightState);
-                    digitalWrite(ledPins[2], 0);
+                    lightStateRG = !lightStateRG;
                 }
+                digitalWrite(ledPins[0], !lightStateRG);
+                digitalWrite(ledPins[1], lightStateRG);
+                digitalWrite(ledPins[2], 0);
                 break;
             case 1: //vabicka
-
+                static uint8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
+                static uint32_t lastPress = 0;
+                if(!digitalRead(button) && millis() > (lastPress + debounce)) {
+                    lastPress = millis();
+                    ++lightState;
+                    if(lightState > 2)
+                        lightState = 0;
+                }
+                for(uint8_t i = 0; i < 3; ++i) {
+                    digitalWrite(ledPins[i], i == lightState);
+                }
                 break;
             case 2: //vlajky
-
+                if(!digitalRead(button) && millis() > (lastPress + debounce)) {
+                    lastPress = millis();
+                    ++lightState;
+                    if(lightState > 3)
+                        lightState = 0;
+                }
+                for(uint8_t i = 0; i < 3; ++i) {
+                    digitalWrite(ledPins[i], i == lightState);
+                }
                 break;
             case 3: //towerDefence
 
