@@ -38,7 +38,8 @@ void handleRoot() {
     Page +=
         String(stateVector.semaforID) +
         String(F(
-                "</h1>"));
+                "</h1>"
+                "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem aktivního herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu."));
    
     Page += F(
                 "<form method='POST' action='datasave'>"

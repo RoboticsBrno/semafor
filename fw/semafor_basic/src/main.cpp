@@ -84,7 +84,7 @@ void loop() {
                 digitalWrite(ledPins[2], 0);
                 break;
             case 1: //vabicka
-                static uint8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
+                static int8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
                 static uint32_t lastPress = 0;
                 if(!digitalRead(button) && millis() > (lastPress + debounce)) {
                     lastPress = millis();
@@ -108,7 +108,53 @@ void loop() {
                 }
                 break;
             case 3: //towerDefence
+                static bool buildState = 0; //0-building, 1-destroying
+                static bool prevButtonState = 0;
+                static uint32_t buttonPressedSince = 0;
+                if(!buildState) {
+                    bool buttonState = digitalRead(button);
+                    if((buttonState && !prevButtonState) && millis() > (lastPress + debounce)) {
+                        lastPress = millis();
+                        ++lightState;   //0-nothing, 1-R, 2-RG, 3-RGB
+                        if(lightState > 3)
+                            lightState = 3;
+                    }
+                    prevButtonState = buttonState;
+                }
+                else {
+                    static uint32_t buttonPressedSinceShort = 0;
+                    if(!digitalRead(button)) {
+                        if(buttonPressedSinceShort == 0)
+                            buttonPressedSinceShort = millis();
+                        if(millis() > buttonPressedSinceShort + 1000*stateVector.tdPressShort) {
+                            buttonPressedSinceShort = millis();
+                            --lightState;
+                            if(lightState < 0)
+                                lightState = 0;
+                        }
+                    }
+                    else {
+                        buttonPressedSinceShort = 0;
+                    }
+                }
 
+                if(!digitalRead(button)) {
+                    if(buttonPressedSince == 0)
+                        buttonPressedSince = millis();
+                    if(millis() > buttonPressedSince + 1000*stateVector.tdPressLong) {
+                        buttonPressedSince = millis();
+                        buildState = !buildState;
+                        lightState = buildState ? lightState + 1 : -1;
+                    }
+                }
+                else {
+                    buttonPressedSince = 0;
+                }
+
+                for(uint8_t i = 0; i < 3; ++i) {
+                    digitalWrite(ledPins[i], i < lightState);
+                }
+                //Serial.printf("%d   %d\n", buildState, lightState);
                 break;
             default:
                 stateVector.currentMode = 0;
