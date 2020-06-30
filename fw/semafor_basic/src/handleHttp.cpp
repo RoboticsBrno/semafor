@@ -94,25 +94,25 @@ void handlaDataSave() {
 
     server.arg("delayMin").toCharArray(buffer, sizeof(buffer) - 1);
     temp = atoi(buffer);
-    if(temp > 1) {
+    if(temp > 0) {
         stateVector.monopolyDelayMin = temp;
     }
 
     server.arg("delayMax").toCharArray(buffer, sizeof(buffer) - 1);
     temp = atoi(buffer);
-    if(temp > 1) {
-        stateVector.monopolyDelayMin = temp;
+    if(temp > 0) {
+        stateVector.monopolyDelayMax = temp;
     }
 
     server.arg("pressShort").toCharArray(buffer, sizeof(buffer) - 1);
     temp = atoi(buffer);
-    if(temp > 1) {
+    if(temp > 0) {
         stateVector.tdPressShort = temp;
     }
 
     server.arg("pressLong").toCharArray(buffer, sizeof(buffer) - 1);
     temp = atoi(buffer);
-    if(temp > 1) {
+    if(temp > 0) {
         stateVector.tdPressLong = temp;
     }
     

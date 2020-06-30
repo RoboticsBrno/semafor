@@ -9,7 +9,7 @@ struct StateVector{
     uint8_t currentMode = 0;
     uint16_t monopolyDelayMin = 10;
     uint16_t monopolyDelayMax = 30;
-    uint8_t tdPressShort = 5;
-    uint8_t tdPressLong = 10;
+    uint8_t tdPressShort = 7;
+    uint8_t tdPressLong = 15;
 };
 #endif /*_STATE_VETOR_*/
