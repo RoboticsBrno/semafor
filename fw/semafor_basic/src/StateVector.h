@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 struct StateVector{
-    uint8_t semaforID = 0;
+    uint8_t semaforID = 1;
     uint8_t ledBrightness[3] = {255, 255, 255};
     uint8_t currentMode = 0;
     uint16_t monopolyDelayMin = 10;

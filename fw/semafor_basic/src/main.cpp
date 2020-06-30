@@ -17,10 +17,9 @@ DNSServer dnsServer;
 // Web server
 ESP8266WebServer server(80);
 
-const char *softAP_ssid = "semafor0";
+char *softAP_ssid = "semafor00";
 const char *softAP_password = "adminadmin";
 
-const char deviceName[] = "semafor0";
 uint8_t button = 0;   //IO, pulled up, boot fail if low
 uint8_t ledPins[] = {1, 2, 3}; //R(TX), G, B(RX)
 
@@ -42,6 +41,7 @@ void setup() {
     //Serial.begin(115200);
     //stateVector_eeprom.write();
     stateVector_eeprom.read();
+    sprintf(softAP_ssid, "semafor%d", stateVector.semaforID);
 
     for(uint8_t i = 0; i < 3; ++i) {
         pinMode(ledPins[i], OUTPUT);
