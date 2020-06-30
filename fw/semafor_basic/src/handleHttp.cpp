@@ -1,11 +1,11 @@
 #include "handleHttp.h"
 #include <ESP8266WebServer.h>
 #include "tools.h"
-#include "EEPROM.h"
 #include <DNSServer.h>
 #include <FS.h>
 
 #include "stateVector.h"
+#include "EEPROM_data.h"
 
 extern ESP8266WebServer server;
 extern char * softAP_ssid;
@@ -15,6 +15,7 @@ extern uint8_t DNS_PORT;
 extern char passwordEntry[11];
 extern char deviceName[10];
 extern StateVector stateVector;
+extern EEPROM_data stateVector_eeprom;
 
 /* Soft AP network parameters */
 IPAddress apIP(192, 168, 0, 1);
@@ -86,6 +87,53 @@ void handleRoot() {
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
+void handlaDataSave() {
+    Serial.println("handlaDataSave");
+    char buffer[10];
+    int32_t temp;
+
+    server.arg("delayMin").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 1) {
+        stateVector.monopolyDelayMin = temp;
+    }
+
+    server.arg("delayMax").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 1) {
+        stateVector.monopolyDelayMin = temp;
+    }
+
+    server.arg("pressShort").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 1) {
+        stateVector.tdPressShort = temp;
+    }
+
+    server.arg("pressLong").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 1) {
+        stateVector.tdPressLong = temp;
+    }
+    
+    if(server.hasArg("monopoly"))
+        stateVector.currentMode = 0;
+    else if(server.hasArg("vabicka"))
+        stateVector.currentMode = 1;
+    else if(server.hasArg("vlajky"))
+        stateVector.currentMode = 2;
+    else if(server.hasArg("towerDefence"))
+        stateVector.currentMode = 3;
+
+    stateVector_eeprom.write();
+
+    server.sendHeader("Location", "/", true);
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+}
 
 void softApEnable() {
 
