@@ -48,12 +48,12 @@ void handleRoot() {
                 "<form method='POST' action='datasave'>"
                 "<h2>Monopoly (0)</h2>"
                 "Přeblikávání mezi červenou a zelenou v náhodném intervalu.<br>"
-                "Minimální perioda změny [sekundy]:<br>"
+                "Minimální doba změny [sekundy]:<br>"
                 "<input type='text' placeholder='");
     Page += String(stateVector.monopolyDelayMin);
     Page += F(
                 "' name='delayMin'/><br>"
-                "Maximální perioda změny [sekundy]:<br>"
+                "Maximální doba změny [sekundy]:<br>"
                 "<input type='text' placeholder='");
     Page += String(stateVector.monopolyDelayMax);
     Page += F(            
@@ -83,9 +83,13 @@ void handleRoot() {
     Page += String(stateVector.tdPressLong);
     Page += F(            
                 "' name='pressLong'/><br>"
-                "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>");
-
+                "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>"
+                "<h2>Nastavení jasu LEDek</h2>"
+                "Nastav hodnotu 1-255 od nejnižšího po nejvyšší jas:<br>"
+                "<input type='text' placeholder='");
+    Page += String(stateVector.ledBrightness[0]);
     Page += F(
+                "' name='brightness'/><br>"
                 "</form></body></html>");
     server.send(200, "text/html", Page);
     server.client().stop(); // Stop is needed because we sent no content length
@@ -118,6 +122,12 @@ void handlaDataSave() {
     temp = atoi(buffer);
     if(temp > 0) {
         stateVector.tdPressLong = temp;
+    }
+
+    server.arg("brightness").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.ledBrightness[0] = temp;
     }
     
     if(server.hasArg("monopoly"))

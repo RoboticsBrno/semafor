@@ -37,6 +37,9 @@ void printInfo() {
     Serial.printf("tdPressShort: %d\n", stateVector.tdPressShort);
     Serial.printf("tdPressLong: %d\n", stateVector.tdPressLong);
 }
+void setLed(uint8_t ledGPIO, bool on) {
+    analogWrite(ledGPIO, on*stateVector.ledBrightness[0]*4);
+}
 
 void setup() {
     //Serial.begin(115200);
@@ -68,24 +71,32 @@ void loop() {
     if(millis() > prevCycle + periodCycle) {
         prevCycle = millis();
         //printInfo();
+        uint8_t currentMode = stateVector.currentMode;
+        static uint8_t prevMode = 0;
 
-        switch(stateVector.currentMode) {
+        switch(currentMode) {
             case 0: //monopoly
                 static uint32_t changeDelay = 0;
                 static uint32_t lastChange = 0;
                 static bool lightStateRG = 0; //0-red, 1-green
+                if(currentMode != prevMode) {
+                    lightStateRG = 0;
+                    lastChange = millis();
+                }
                 if(millis() > (lastChange + changeDelay)) {
                     lastChange = millis();
                     changeDelay = 1000 * random(stateVector.monopolyDelayMin, stateVector.monopolyDelayMax);
 
                     lightStateRG = !lightStateRG;
                 }
-                digitalWrite(ledPins[0], !lightStateRG);
-                digitalWrite(ledPins[1], lightStateRG);
-                digitalWrite(ledPins[2], 0);
+                setLed(ledPins[0], !lightStateRG);
+                setLed(ledPins[1], lightStateRG);
+                setLed(ledPins[2], 0);
                 break;
             case 1: //vabicka
                 static int8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
+                if(currentMode != prevMode)
+                    lightState = 0;
                 static uint32_t lastPress = 0;
                 if(!digitalRead(button) && millis() > (lastPress + debounce)) {
                     lastPress = millis();
@@ -94,10 +105,12 @@ void loop() {
                         lightState = 0;
                 }
                 for(uint8_t i = 0; i < 3; ++i) {
-                    digitalWrite(ledPins[i], i == lightState);
+                    setLed(ledPins[i], i == lightState);
                 }
                 break;
             case 2: //vlajky
+                if(currentMode != prevMode)
+                    lightState = 0;
                 if(!digitalRead(button) && millis() > (lastPress + debounce)) {
                     lastPress = millis();
                     ++lightState;
@@ -105,13 +118,17 @@ void loop() {
                         lightState = 0;
                 }
                 for(uint8_t i = 0; i < 3; ++i) {
-                    digitalWrite(ledPins[i], i == lightState);
+                    setLed(ledPins[i], i == lightState);
                 }
                 break;
             case 3: //towerDefence
                 static uint8_t buildState = 0; //0-building, 1-short flashing, 2-destroying, 3-flashing
                 static bool prevButtonState = 0, buttonState = 0;
                 static uint32_t buttonPressedSince = 0;
+                if(currentMode != prevMode) {
+                    buildState = 0;
+                    lightState = 0;
+                }
                 switch(buildState) {
                     case 0:     //building
                         buttonState = digitalRead(button);
@@ -194,24 +211,13 @@ void loop() {
                 }
 
                 for(uint8_t i = 0; i < 3; ++i) {
-                    digitalWrite(ledPins[i], i < lightState);
+                    setLed(ledPins[i], i < lightState);
                 }
                 //Serial.printf("%d   %d\n", buildState, lightState);
                 break;
             default:
                 stateVector.currentMode = 0;
         }
+        prevMode = currentMode;
     }
-
-    /*for(uint8_t i = 0; i < 3; ++i) {
-        digitalWrite(ledPins[i], 1);
-        if(!digitalRead(button)) {
-            for(uint8_t j = 0; j < 3; ++j) {
-                digitalWrite(ledPins[j], 1);
-            }
-        }
-        delay(200);
-        digitalWrite(ledPins[i], 0);
-    }*/
-
 }
