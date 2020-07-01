@@ -26,6 +26,7 @@ uint8_t ledPins[] = {1, 2, 3}; //R(TX), G, B(RX)
 uint32_t prevCycle = 0;
 uint16_t periodCycle = 20;
 uint16_t debounce = 1000;
+uint16_t flashPeriod = 100;
 
 
 void printInfo() {
@@ -108,34 +109,69 @@ void loop() {
                 }
                 break;
             case 3: //towerDefence
-                static bool buildState = 0; //0-building, 1-destroying
-                static bool prevButtonState = 0;
+                static uint8_t buildState = 0; //0-building, 1-short flashing, 2-destroying, 3-flashing
+                static bool prevButtonState = 0, buttonState = 0;
                 static uint32_t buttonPressedSince = 0;
-                if(!buildState) {
-                    bool buttonState = digitalRead(button);
-                    if((buttonState && !prevButtonState) && millis() > (lastPress + debounce)) {
-                        lastPress = millis();
-                        ++lightState;   //0-nothing, 1-R, 2-RG, 3-RGB
-                        if(lightState > 3)
-                            lightState = 3;
-                    }
-                    prevButtonState = buttonState;
-                }
-                else {
-                    static uint32_t buttonPressedSinceShort = 0;
-                    if(!digitalRead(button)) {
-                        if(buttonPressedSinceShort == 0)
-                            buttonPressedSinceShort = millis();
-                        if(millis() > buttonPressedSinceShort + 1000*stateVector.tdPressShort) {
-                            buttonPressedSinceShort = millis();
-                            --lightState;
-                            if(lightState < 0)
-                                lightState = 0;
+                switch(buildState) {
+                    case 0:     //building
+                        buttonState = digitalRead(button);
+                        if((buttonState && !prevButtonState) && millis() > (lastPress + debounce)) {
+                            lastPress = millis();
+                            ++lightState;   //0-nothing, 1-R, 2-RG, 3-RGB
+                            if(lightState > 3)
+                                lightState = 3;
                         }
-                    }
-                    else {
-                        buttonPressedSinceShort = 0;
-                    }
+                        prevButtonState = buttonState;
+                        break;
+                    case 1:     //short flashing
+                        static uint32_t flashStart = 0;
+                        static uint8_t flashesCount = 0;
+                        static int8_t tempLightState;
+                        if(flashesCount == 0)
+                            tempLightState = lightState;
+                        if(millis() > (flashStart + flashPeriod)) {
+                            flashStart = millis();
+                            ++flashesCount;
+                            if(lightState)
+                                lightState = 0;
+                            else
+                                lightState = 3;
+                            
+                            if(flashesCount > 20) {
+                                flashesCount = 0;
+                                flashStart = 0;
+                                buildState = 2;
+                                lightState = tempLightState;
+                            }
+                        }
+                        break;
+                    case 2:     //destroying
+                        static uint32_t buttonPressedSinceShort = 0;
+                        if(!digitalRead(button)) {
+                            if(buttonPressedSinceShort == 0)
+                                buttonPressedSinceShort = millis();
+                            if(millis() > buttonPressedSinceShort + 1000*stateVector.tdPressShort) {
+                                buttonPressedSinceShort = millis();
+                                --lightState;
+                                if(lightState <= 0) {
+                                    lightState = 0;
+                                    buildState = 3;
+                                }
+                            }
+                        }
+                        else {
+                            buttonPressedSinceShort = 0;
+                        }
+                        break;
+                    default:    //case 3 - flashing
+                        if(millis() > (flashStart + flashPeriod)) {
+                            flashStart = millis();
+                            if(lightState)
+                                lightState = 0;
+                            else
+                                lightState = 3;
+                        }
+                        break;
                 }
 
                 if(!digitalRead(button)) {
@@ -143,8 +179,14 @@ void loop() {
                         buttonPressedSince = millis();
                     if(millis() > buttonPressedSince + 1000*stateVector.tdPressLong) {
                         buttonPressedSince = millis();
-                        buildState = !buildState;
-                        lightState = buildState ? lightState + 1 : -1;
+                        if(buildState == 0) {
+                            buildState = 1;
+                        }
+                        else {
+                            buildState = 0;
+                            lightState = -1;
+                        }
+                        //lightState = buildState ? lightState + 1 : -1;
                     }
                 }
                 else {

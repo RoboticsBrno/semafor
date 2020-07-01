@@ -39,11 +39,14 @@ void handleRoot() {
         String(stateVector.semaforID) +
         String(F(
                 "</h1>"
-                "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem aktivního herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu."));
+                "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu.<br>"
+                "Aktuálně zvolený herní mód: ")) +
+        String(stateVector.currentMode);
+
    
     Page += F(
                 "<form method='POST' action='datasave'>"
-                "<h2>Monopoly</h2>"
+                "<h2>Monopoly (0)</h2>"
                 "Přeblikávání mezi červenou a zelenou v náhodném intervalu.<br>"
                 "Minimální perioda změny [sekundy]:<br>"
                 "<input type='text' placeholder='");
@@ -58,17 +61,17 @@ void handleRoot() {
                 "<input type='submit' name='monopoly' value='Ulož a aktivuj monopoly'/><br>");
     
     Page += F(
-                "<h2>Vábička</h2>"
+                "<h2>Vábička (1)</h2>"
                 "Stisknutím tlačítka se střídají barvy R, G, B.<br>"
                 "<input type='submit' name='vabicka' value='Aktivuj vábičku'/><br>");
 
     Page += F(
-                "<h2>Vlajky</h2>"
+                "<h2>Vlajky (2)</h2>"
                 "Stisknutím tlačítka se střídají barvy R, G, B a tma.<br>"
                 "<input type='submit' name='vlajky' value='Aktivuj vlajky'/><br>");
 
     Page += F(
-                "<h2>Tower Defence</h2>"
+                "<h2>Tower Defence (3)</h2>"
                 "2 módy - stavba a rozebírání zdi. Přepínání mezi nimi dlouhým stiskem tlačítka. Při stavbě zdi mačkání tlačítka postupně rozsvěcí LEDky. Při rozebírání dlouhý stisk tlačítka postupně zhasíná LEDky. Po zhasnutí všech se semafor rozbliká.<br>"
                 "Doba krátkého stisku tlačítka [sekundy]:<br>"
                 "<input type='text' placeholder='");
