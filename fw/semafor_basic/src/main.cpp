@@ -78,7 +78,7 @@ void loop() {
             case 0: //monopoly
                 static uint32_t changeDelay = 0;
                 static uint32_t lastChange = 0;
-                static bool lightStateRG = 0; //0-red, 1-green
+                static bool lightStateRG = 1; //0-red, 1-green
                 if(currentMode != prevMode) {
                     lightStateRG = 0;
                     lastChange = millis();
