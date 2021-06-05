@@ -9,7 +9,9 @@ DNSServer dnsServer;
 ESP8266WebServer server(80);
 
 StateVector stateVector;
+uint8_t semaforID = 20;
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
+EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
 uint8_t prevMode;
 uint8_t DNS_PORT = 53;
@@ -57,7 +59,7 @@ bool buttonPressed(uint16_t timeMs, bool activeEnd = 1) {
 }
 
 void printInfo() {
-    Serial.printf("semaforID: %d\n", stateVector.semaforID);
+    Serial.printf("semaforID: %d\n", semaforID);
     Serial.printf("currentMode: %d\n", stateVector.currentMode);
     Serial.printf("monopolyDelayMin: %d\n", stateVector.monopolyDelayMin);
     Serial.printf("monopolyDelayMax: %d\n", stateVector.monopolyDelayMax);
@@ -66,6 +68,9 @@ void printInfo() {
 }
 
 void semaforInit() {
+    stateVector_eeprom.read();
+    semaforID_eeprom.read();
+
     for(uint8_t i = 0; i < 3; ++i) {
         pinMode(ledPins[i], OUTPUT);
     }
@@ -75,9 +80,11 @@ void semaforInit() {
     softApEnable();
 
     server.on("/", handleRoot);
-    server.on("/datasave", handlaDataSave);
-    server.on("/generate_204", handleRoot);  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
-    server.on("/fwlink", handleRoot);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+    server.on("/datasave", handleDataSave);
+    server.on("/addparam", handleAddParam);
+    server.onNotFound(handleRoot);
+    //server.on("/generate_204", handleRoot);  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
+    //server.on("/fwlink", handleRoot);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     server.serveStatic("/style.css", LittleFS, "/style.css");
     server.begin();
 

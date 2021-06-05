@@ -6,7 +6,6 @@ uint16_t periodCycle = 20;
 void setup() {
     //Serial.begin(115200);
     //stateVector_eeprom.write();
-    stateVector_eeprom.read();
 
     semaforInit();
 }

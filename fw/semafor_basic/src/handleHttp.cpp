@@ -22,7 +22,7 @@ void handleRoot() {
                 "<title>CaptivePortal</title></head><body>"
                 "<h1>Nastavení semaforu #");
     Page +=
-        String(stateVector.semaforID) +
+        String(semaforID) +
         String(F(
                 "</h1>"
                 "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu.<br>"
@@ -81,7 +81,7 @@ void handleRoot() {
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
-void handlaDataSave() {
+void handleDataSave() {
     Serial.println("handlaDataSave");
     char buffer[10];
     int32_t temp;
@@ -135,6 +135,28 @@ void handlaDataSave() {
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
+void handleAddParam() {
+    char buffer[10];
+    int32_t temp;
+
+    if(server.hasArg("id")) {
+        // IP/addParam?id=X
+        server.arg("id").toCharArray(buffer, sizeof(buffer) - 1);
+        temp = atoi(buffer);
+        if(temp >= 0) {
+            semaforID = temp;
+            semaforID_eeprom.write();
+        }
+    }
+
+    server.sendHeader("Location", "/", true);
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+}
+
 void softApEnable() {
 
     WiFi.softAPConfig(apIP, apIP, netMsk);
@@ -149,13 +171,6 @@ void softApEnable() {
 void softApDisable() {
     WiFi.softAPdisconnect(1);
 }
-
-void handleNotFound() {
-    File f = LittleFS.open("/notFound.html", "r");
-    server.streamFile(f, "text/html");
-    f.close();
-}
-
 
 bool isIp(String str) {
   for (size_t i = 0; i < str.length(); i++) {

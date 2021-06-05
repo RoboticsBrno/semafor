@@ -24,6 +24,8 @@ extern ESP8266WebServer server;
 
 extern StateVector stateVector;
 extern EEPROM_data stateVector_eeprom;
+extern uint8_t semaforID;
+extern EEPROM_data semaforID_eeprom;
 
 extern uint8_t DNS_PORT;
 extern uint8_t prevMode;

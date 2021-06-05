@@ -5,7 +5,8 @@
 
 /** Handle root or redirect to captive portal */
 void handleRoot();
-void handlaDataSave();
+void handleDataSave();
+void handleAddParam();
 
 void softApEnable();
 void softApDisable();
