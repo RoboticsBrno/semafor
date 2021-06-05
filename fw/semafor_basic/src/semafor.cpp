@@ -9,7 +9,7 @@ DNSServer dnsServer;
 ESP8266WebServer server(80);
 
 StateVector stateVector;
-uint8_t semaforID = 20;
+uint8_t semaforID = 0;
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
@@ -82,9 +82,8 @@ void semaforInit() {
     server.on("/", handleRoot);
     server.on("/datasave", handleDataSave);
     server.on("/addparam", handleAddParam);
+        // IP/addParam?id=X
     server.onNotFound(handleRoot);
-    //server.on("/generate_204", handleRoot);  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
-    //server.on("/fwlink", handleRoot);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
     server.serveStatic("/style.css", LittleFS, "/style.css");
     server.begin();
 
