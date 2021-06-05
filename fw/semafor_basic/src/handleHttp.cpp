@@ -1,21 +1,10 @@
-#include "handleHttp.h"
 #include <ESP8266WebServer.h>
 #include "tools.h"
 #include <DNSServer.h>
 #include <FS.h>
 
-#include "stateVector.h"
-#include "EEPROM_data.h"
-
-extern ESP8266WebServer server;
-extern char * softAP_ssid;
-extern char * softAP_password;
-extern DNSServer dnsServer;
-extern uint8_t DNS_PORT;
-extern char passwordEntry[11];
-extern char deviceName[10];
-extern StateVector stateVector;
-extern EEPROM_data stateVector_eeprom;
+#include "handleHttp.h"
+#include "semafor.h"
 
 /* Soft AP network parameters */
 IPAddress apIP(192, 168, 0, 1);
