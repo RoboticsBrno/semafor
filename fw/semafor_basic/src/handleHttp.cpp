@@ -1,14 +1,11 @@
-#include <ESP8266WebServer.h>
-#include "tools.h"
-#include <DNSServer.h>
-#include <FS.h>
-
-#include "handleHttp.h"
 #include "semafor.h"
+#include "handleHttp.h"
 
 /* Soft AP network parameters */
 IPAddress apIP(192, 168, 0, 1);
 IPAddress netMsk(255, 255, 255, 0);
+
+
 
 void handleRoot() {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -154,7 +151,27 @@ void softApDisable() {
 }
 
 void handleNotFound() {
-    File f = SPIFFS.open("/notFound.html", "r");
+    File f = LittleFS.open("/notFound.html", "r");
     server.streamFile(f, "text/html");
     f.close();
+}
+
+
+bool isIp(String str) {
+  for (size_t i = 0; i < str.length(); i++) {
+    int c = str.charAt(i);
+    if (c != '.' && (c < '0' || c > '9')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+String toStringIp(IPAddress ip) {
+  String res = "";
+  for (int i = 0; i < 3; i++) {
+    res += String((ip >> (8 * i)) & 0xFF) + ".";
+  }
+  res += String(((ip >> 8 * 3)) & 0xFF);
+  return res;
 }

@@ -71,15 +71,15 @@ void semaforInit() {
     }
     pinMode(button, INPUT_PULLUP);
 
-    SPIFFS.begin();
+    LittleFS.begin();
     softApEnable();
 
     server.on("/", handleRoot);
     server.on("/datasave", handlaDataSave);
     server.on("/generate_204", handleRoot);  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
     server.on("/fwlink", handleRoot);  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-    server.serveStatic("/style.css", SPIFFS, "/style.css");
-    server.begin(); // Web server start
+    server.serveStatic("/style.css", LittleFS, "/style.css");
+    server.begin();
 
     randomSeed(analogRead(A0));
 

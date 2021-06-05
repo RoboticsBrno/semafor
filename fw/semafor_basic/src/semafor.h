@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
+#include "LittleFS.h"
 
 #include "stateVector.h"
 #include "EEPROM_data.h"
