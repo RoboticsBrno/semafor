@@ -76,15 +76,14 @@ void semaforInit() {
     }
     pinMode(button, INPUT_PULLUP);
 
-    LittleFS.begin();
     softApEnable();
 
     server.on("/", handleRoot);
     server.on("/datasave", handleDataSave);
     server.on("/addparam", handleAddParam);
-        // IP/addParam?id=X
+        // put "IP/addParam?id=X" into URL for setting semafor ID
     server.onNotFound(handleRoot);
-    server.serveStatic("/style.css", LittleFS, "/style.css");
+    server.on("/style.css", handleStyle);
     server.begin();
 
     randomSeed(analogRead(A0));

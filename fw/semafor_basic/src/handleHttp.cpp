@@ -1,5 +1,6 @@
 #include "semafor.h"
 #include "handleHttp.h"
+#include "web_files.h"
 
 /* Soft AP network parameters */
 IPAddress apIP(192, 168, 0, 1);
@@ -140,7 +141,6 @@ void handleAddParam() {
     int32_t temp;
 
     if(server.hasArg("id")) {
-        // IP/addParam?id=X
         server.arg("id").toCharArray(buffer, sizeof(buffer) - 1);
         temp = atoi(buffer);
         if(temp >= 0) {
@@ -154,6 +154,11 @@ void handleAddParam() {
     server.sendHeader("Pragma", "no-cache");
     server.sendHeader("Expires", "-1");
     server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+}
+
+void handleStyle() {
+    server.send(200, "text/css", style);
     server.client().stop(); // Stop is needed because we sent no content length
 }
 

@@ -7,6 +7,7 @@
 void handleRoot();
 void handleDataSave();
 void handleAddParam();
+void handleStyle();
 
 void softApEnable();
 void softApDisable();
