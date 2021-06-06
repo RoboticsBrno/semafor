@@ -13,7 +13,7 @@ uint8_t semaforID = 0;
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
-uint8_t prevMode;
+uint8_t prevMode = 0;
 uint8_t DNS_PORT = 53;
 
 void setLed(uint8_t ledID, bool on) {
@@ -87,8 +87,6 @@ void semaforInit() {
     server.begin();
 
     randomSeed(analogRead(A0));
-
-    prevMode = 0;
 }
 
 void semaforLoop() {
@@ -104,6 +102,9 @@ void semaforLoop() {
             break;
         case 3:
             handleTowerDefence();
+            break;
+        case 4:
+            handleHoldToGet();
             break;
         default:
             stateVector.currentMode = 0;
@@ -248,4 +249,8 @@ void handleTowerDefence() {
         setLed(ledPins[i], i < lightState);
     }
     //Serial.printf("%d   %d\n", buildState, lightState);
+}
+
+void handleHoldToGet() {
+    ;
 }

@@ -70,7 +70,17 @@ void handleRoot() {
     Page += String(stateVector.tdPressLong);
     Page += F(            
                 "' name='pressLong'/><br>"
-                "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>"
+                "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>");
+    Page += F(
+                "<h2>Hold to Get (4)</h2>"
+                "Při stisku tlačítka zabliká a rozsvítí se červeně. Po uplynutí nastavené doby stisku zabliká a rozsvítí se zeleně. Poté opět zhasne.<br>"
+                "Doba stisku tlačítka [sekundy]:<br>"
+                "<input type='text' placeholder='");
+    Page += String(stateVector.holdToGetTimeout);
+    Page += F(            
+                "' name='holdToGet_press'/><br>"
+                "<input type='submit' name='holdToGet' value='Ulož a aktivuj Hold to Get'/><br>");
+    Page += F(
                 "<h2>Nastavení jasu LEDek</h2>"
                 "Nastav hodnotu 1-255 od nejnižšího po nejvyšší jas:<br>"
                 "<input type='text' placeholder='");
@@ -111,6 +121,12 @@ void handleDataSave() {
         stateVector.tdPressLong = temp;
     }
 
+    server.arg("holdToGet_press").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.holdToGetTimeout = temp;
+    }
+
     server.arg("brightness").toCharArray(buffer, sizeof(buffer) - 1);
     temp = atoi(buffer);
     if(temp > 0) {
@@ -125,6 +141,8 @@ void handleDataSave() {
         stateVector.currentMode = 2;
     else if(server.hasArg("towerDefence"))
         stateVector.currentMode = 3;
+    else if(server.hasArg("holdToGet"))
+        stateVector.currentMode = 4;
 
     stateVector_eeprom.write();
 

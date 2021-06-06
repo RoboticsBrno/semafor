@@ -42,6 +42,7 @@ void handleMonopoly();
 void handleVabicka();
 void handleVlajky();
 void handleTowerDefence();
+void handleHoldToGet();
 
 
 
