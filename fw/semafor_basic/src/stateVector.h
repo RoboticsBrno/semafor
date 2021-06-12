@@ -1,5 +1,4 @@
-#ifndef _STATE_VECTOR_
-#define _STATE_VECTOR_
+#pragma once
 
 #include <Arduino.h>
 
@@ -11,4 +10,3 @@ struct StateVector{
     uint8_t tdPressShort = 7;
     uint8_t tdPressLong = 12;
 };
-#endif /*_STATE_VETOR_*/

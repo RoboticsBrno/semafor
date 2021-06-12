@@ -1,5 +1,4 @@
-#ifndef _SEMAFOR_
-#define _SEMAFOR_
+#pragma once
 
 #include <Arduino.h>
 #include <ESP8266WebServer.h>
@@ -43,7 +42,3 @@ void handleMonopoly();
 void handleVabicka();
 void handleVlajky();
 void handleTowerDefence();
-
-
-
-#endif // _SEMAFOR_

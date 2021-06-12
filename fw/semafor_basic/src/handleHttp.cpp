@@ -2,7 +2,7 @@
 #include "handleHttp.h"
 
 /* Soft AP network parameters */
-IPAddress apIP(192, 168, 0, 1);
+IPAddress apIP(192, 168, 1, 1);
 IPAddress netMsk(255, 255, 255, 0);
 
 
