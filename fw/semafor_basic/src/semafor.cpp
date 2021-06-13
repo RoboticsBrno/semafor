@@ -13,11 +13,11 @@ uint8_t semaforID = 0;
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
-uint8_t prevMode;
+uint8_t prevMode = 0;
 uint8_t DNS_PORT = 53;
 
 void setLed(uint8_t ledID, bool on) {
-    analogWrite(ledPins[ledID], on*stateVector.ledBrightness[0]*4);
+    analogWrite(ledPins[ledID], on*stateVector.ledBrightness[0]*4); // ? jak se podle toho nastavuje jas?
 }
 void setLeds(bool red, bool green, bool blue) {
     setLed(0, red);
@@ -76,20 +76,17 @@ void semaforInit() {
     }
     pinMode(button, INPUT_PULLUP);
 
-    LittleFS.begin();
     softApEnable();
 
     server.on("/", handleRoot);
     server.on("/datasave", handleDataSave);
     server.on("/addparam", handleAddParam);
-        // IP/addParam?id=X
+        // put "IP/addParam?id=X" into URL for setting semafor ID
     server.onNotFound(handleRoot);
-    server.serveStatic("/style.css", LittleFS, "/style.css");
+    server.on("/style.css", handleStyle);
     server.begin();
 
     randomSeed(analogRead(A0));
-
-    prevMode = 0;
 }
 
 void semaforLoop() {
@@ -105,6 +102,9 @@ void semaforLoop() {
             break;
         case 3:
             handleTowerDefence();
+            break;
+        case 4:
+            handleHoldToGet();
             break;
         default:
             stateVector.currentMode = 0;
@@ -249,4 +249,8 @@ void handleTowerDefence() {
         setLed(ledPins[i], i < lightState);
     }
     //Serial.printf("%d   %d\n", buildState, lightState);
+}
+
+void handleHoldToGet() {
+    ;
 }
