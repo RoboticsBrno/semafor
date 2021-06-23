@@ -3,7 +3,7 @@
 #include "web_files.h"
 
 /* Soft AP network parameters */
-IPAddress apIP(192, 168, 0, 1);
+IPAddress apIP(192, 168, 1, 1);
 IPAddress netMsk(255, 255, 255, 0);
 
 
@@ -65,7 +65,7 @@ void handleRoot() {
     Page += String(stateVector.tdPressShort);
     Page += F(
                 "' name='pressShort'/><br>"
-                "Doba dlouhého stisku tlačítka [sekundy]:<br>"
+                "Doba dlouhého stisku tlačítka [seku ndy]:<br>"
                 "<input type='text' placeholder='");
     Page += String(stateVector.tdPressLong);
     Page += F(            

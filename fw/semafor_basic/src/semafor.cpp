@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "StateVector.h"
+#include "stateVector.h"
 #include "semafor.h"
 
 String softAP_ssid = "Semafor";
@@ -81,7 +81,7 @@ void semaforInit() {
     server.on("/", handleRoot);
     server.on("/datasave", handleDataSave);
     server.on("/addparam", handleAddParam);
-        // put "IP/addParam?id=X" into URL for setting semafor ID
+        // put "IP/addparam?id=X" into URL for setting semafor ID
     server.onNotFound(handleRoot);
     server.on("/style.css", handleStyle);
     server.begin();
