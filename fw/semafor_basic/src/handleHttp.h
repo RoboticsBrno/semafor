@@ -9,6 +9,7 @@ void handleDataSave();
 void handleAddParam();
 void handleStyle();
 
+void conntectToWifi();
 void softApEnable();
 void softApDisable();
 

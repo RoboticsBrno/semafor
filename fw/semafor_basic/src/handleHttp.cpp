@@ -3,8 +3,7 @@
 #include "web_files.h"
 
 /* Soft AP network parameters */
-IPAddress apIP(192, 168, 1, 1);
-IPAddress netMsk(255, 255, 255, 0);
+
 
 
 
@@ -87,6 +86,10 @@ void handleRoot() {
     Page += String(stateVector.ledBrightness[0]);
     Page += F(
                 "' name='brightness'/><br>"
+                "Ledky jsou ativni: ");
+    Page += String(stateVector.activeLed);
+    Page += F(
+                "<br>"
                 "<input type='submit' name='ledserial' value='Prepinac LED/Serial'/><br>"
                 "</form></body></html>");
     server.send(200, "text/html", Page);
@@ -145,13 +148,21 @@ void handleDataSave() {
     else if(server.hasArg("holdToGet"))
         stateVector.currentMode = 4;
     else if(server.hasArg("ledserial")){
-        activeLed = !activeLed;
-        if(activeLed) {
-            initLeds();
+        if(stateVector.activeLed == false) {
+            initSerial();
+            stateVector.activeLed = true;
         }
         else {
-            initSerial();
-        }        
+            initLeds();
+            stateVector.activeLed = false;
+        }
+
+        // if(stateVector.activeLed) {
+        //     initLeds();
+        // }
+        // else {
+        //     initSerial();
+        // }        
     }
         
 
@@ -191,15 +202,19 @@ void handleStyle() {
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
-void softApEnable() {
+void conntectToWifi() {
+    WiFi.begin(wifi_ssid, wifi_password);
+}
 
-    WiFi.softAPConfig(apIP, apIP, netMsk);
-    WiFi.softAP(softAP_ssid, softAP_password);
+void softApEnable() {
+    WiFi.disconnect();
+    WiFi.softAPConfig(wifiIP, wifiIP, netMsk);
+    WiFi.softAP(wifi_ssid, wifi_password);
     delay(500); // Without delay I've seen the IP address blank
 
-    /* Setup the DNS server redirecting all the domains to the apIP */
+    /* Setup the DNS server redirecting all the domains to the wifiIP */
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer.start(DNS_PORT, "*", apIP);
+    dnsServer.start(DNS_PORT, "*", wifiIP);
 }
 
 void softApDisable() {

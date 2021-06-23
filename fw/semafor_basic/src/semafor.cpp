@@ -2,8 +2,12 @@
 #include "stateVector.h"
 #include "semafor.h"
 
-String softAP_ssid = "Semafor";
-String softAP_password = "adminadmin";
+#define SECOND 1000
+
+String wifi_ssid = "Semafor";
+String wifi_password = "adminadmin";
+IPAddress wifiIP(192, 168, 1, 1);
+IPAddress netMsk(255, 255, 255, 0);
 
 DNSServer dnsServer;
 ESP8266WebServer server(80);
@@ -13,13 +17,15 @@ uint8_t semaforID = 0;
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
+WiFiUDP udpSett;
+
 uint8_t prevMode = 0;
 uint8_t DNS_PORT = 53;
 
-bool activeLed = false;
+// bool activeLed = false;
 
 void setLed(uint8_t ledID, bool on) {
-    if(activeLed) {
+    if(stateVector.activeLed) {
         analogWrite(ledPins[ledID], on*stateVector.ledBrightness[0]*4);
     }
 }
@@ -69,6 +75,7 @@ void printInfo() {
     Serial.printf("monopolyDelayMax: %d\n", stateVector.monopolyDelayMax);
     Serial.printf("tdPressShort: %d\n", stateVector.tdPressShort);
     Serial.printf("tdPressLong: %d\n", stateVector.tdPressLong);
+    Serial.printf("\n");
 }
 
 void initLeds() {
@@ -89,7 +96,7 @@ void semaforInit() {
     stateVector_eeprom.read();
     semaforID_eeprom.read();
 
-    if(activeLed) {
+    if(stateVector.activeLed) {
         initLeds();
     }
     else {
@@ -98,18 +105,136 @@ void semaforInit() {
 
     pinMode(button, INPUT_PULLUP);
 
+    Serial.println("Start WiFI");
     softApEnable();
 
     server.on("/", handleRoot);
     server.on("/datasave", handleDataSave);
     server.on("/addparam", handleAddParam);
-        // put "IP/addparam?id=X" into URL for setting semafor ID
+        // put "IP/addParam?id=X" into URL for setting semafor ID
     server.onNotFound(handleRoot);
     server.on("/style.css", handleStyle);
     server.begin();
 
+    // udpSett.begin(1111); 
+
     randomSeed(analogRead(A0));
 }
+
+void settBrodcast() {
+    static bool initBrodcast = true;
+    static bool blinkCenter = true;
+    static ArduinoMetronome blinker(800);
+
+    if(initBrodcast) {
+        setLeds(true, false, true);
+
+        Serial.println("Start WiFi");
+        softApEnable();
+
+        server.on("/", handleRoot);
+        server.on("/datasave", handleDataSave);
+        server.on("/addparam", handleAddParam);
+            // put "IP/addParam?id=X" into URL for setting semafor ID
+        server.onNotFound(handleRoot);
+        server.on("/style.css", handleStyle);
+        server.begin();
+
+        udpSett.begin(1111);
+
+        initBrodcast = false;
+    }
+
+    if(blinker.loopMs()) {
+        if(blinkCenter) {
+            setLeds(false, true, false);
+        }
+        else {
+            setLeds(true, false, true);
+        }
+        blinkCenter = !blinkCenter;
+    }
+
+}
+
+void settReceive() {
+    static bool initReceive = true;
+    static bool initConnected = true;
+    static bool connected = false;
+
+    if(initReceive) {
+        conntectToWifi();
+        initReceive = false;
+    }
+
+    if(WiFi.status() == WL_CONNECTED) {
+        connected = true;
+        Serial.println("Connected to WiFi");
+    }
+
+
+    // udpSett.beginPacket(wifiIP, 1111);
+    // udpSett.println(WiFi.localIP());
+    // udpSett.endPacket();
+
+    // Serial.println("Send local IP: " + WiFi.localIP().toString());
+    
+    // StateVector receive;
+
+    // int packetSize = udpSett.parsePacket();
+    // if (packetSize) {
+
+    //     int len = udpSett.read((char *) &receive, sizeof(receive));
+    //     if(len>0) {
+    //         Serial.println("Recived settings: " + String(receive.currentMode));
+    //     }
+    //     else {
+    //         Serial.println("ERR");
+    //     }
+        
+    // }
+
+}
+
+
+semState semaforState() {
+    static semState lastState = S_NORMAL;
+    semState nowState = S_NORMAL;
+
+    static bool pressedOnStart = false;
+    static int startPressedTime;
+    static int startTime = millis();
+    int nowTime = millis();
+
+    if(lastState == S_BRODCAST) {
+        return S_BRODCAST; // all time brodcast
+    }
+
+
+    if(nowTime-startTime < 20 * SECOND) {
+        bool buttonState = !digitalRead(button);
+
+        if(!buttonState) {
+            pressedOnStart = false;
+            nowState = S_RECEIVE; // if not pressed + to 20 sec from start
+        }
+        else if(buttonState && pressedOnStart == false) {
+            startPressedTime = millis();
+            pressedOnStart = true;
+        }
+        else if(pressedOnStart && nowTime-startPressedTime > 2 * SECOND) {
+            nowState = S_BRODCAST; //if pressed for 3 sec + to 20 sec from start
+        }
+
+    }
+    else {
+        nowState = S_NORMAL; // else
+    }
+
+    lastState = nowState;
+    return nowState;
+}
+
 
 void semaforLoop() {
     switch(stateVector.currentMode) {
@@ -133,6 +258,7 @@ void semaforLoop() {
     }
     prevMode = stateVector.currentMode;
 }
+
 
 void handleMonopoly() {
     static uint32_t changeDelay = 0;

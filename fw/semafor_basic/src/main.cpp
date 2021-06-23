@@ -1,12 +1,16 @@
 #include "semafor.h"
 #include "ArduinoMetronome.hpp"
 
-uint16_t periodCycle = 20;
-ArduinoMetronome loopMain(periodCycle);
+
 
 void setup() {
-    //Serial.begin(115200);
-    //stateVector_eeprom.write();
+
+    uint16_t periodCycle = 20;
+    ArduinoMetronome loopMain(periodCycle);
+    ArduinoMetronome loopPrint(4000);
+    // ArduinoMetronome loopSettings(10);
+
+    semState sState;
 
     semaforInit();
 
@@ -16,10 +20,41 @@ void setup() {
         server.handleClient();
 
 
+        // if(loopMain.loopMs()) {
+        //     semaforLoop();
+        // }
+
+        if(loopPrint.loopMs()) {
+            // printInfo();
+        }   
+
+        
         if(loopMain.loopMs()) {
-            semaforLoop();
-            printInfo();
-        }        
+            sState = semaforState();
+            switch (sState)
+            {
+            case S_RECEIVE:
+                Serial.println("S_RECEIVE");
+                settReceive();
+
+                
+                // jump to normal mode
+                break;
+
+            case S_NORMAL:
+                Serial.println("S_NORMAL");
+
+                semaforLoop();
+                break;
+            
+            case S_BRODCAST:
+                Serial.println("S_BRODCAST");
+                settBrodcast();
+
+                break;
+            }
+
+        }     
     }
     
 }
