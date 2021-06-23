@@ -1,21 +1,27 @@
 #include "semafor.h"
+#include "ArduinoMetronome.hpp"
 
-uint32_t prevCycle = 0;
 uint16_t periodCycle = 20;
+ArduinoMetronome loopMain(periodCycle);
 
 void setup() {
     //Serial.begin(115200);
     //stateVector_eeprom.write();
 
     semaforInit();
+
+    while (true)
+    {
+        dnsServer.processNextRequest();
+        server.handleClient();
+
+
+        if(loopMain.loopMs()) {
+            semaforLoop();
+            printInfo();
+        }        
+    }
+    
 }
 
-void loop() {
-    dnsServer.processNextRequest();
-    server.handleClient();
-    if(millis() > prevCycle + periodCycle) {
-        prevCycle = millis();
-        //printInfo();
-        semaforLoop();
-    }
-}
+void loop() {}

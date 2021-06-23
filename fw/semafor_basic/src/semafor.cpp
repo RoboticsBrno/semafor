@@ -16,8 +16,12 @@ EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 uint8_t prevMode = 0;
 uint8_t DNS_PORT = 53;
 
+bool activeLed = false;
+
 void setLed(uint8_t ledID, bool on) {
-    analogWrite(ledPins[ledID], on*stateVector.ledBrightness[0]*4);
+    if(activeLed) {
+        analogWrite(ledPins[ledID], on*stateVector.ledBrightness[0]*4);
+    }
 }
 void setLeds(bool red, bool green, bool blue) {
     setLed(0, red);
@@ -67,13 +71,31 @@ void printInfo() {
     Serial.printf("tdPressLong: %d\n", stateVector.tdPressLong);
 }
 
+void initLeds() {
+    for(uint8_t i = 0; i < 3; ++i) {
+        pinMode(ledPins[i], OUTPUT);
+    }
+}
+
+void initSerial() {
+    Serial.begin(115200);
+    for(uint8_t i = 0; i < 3; ++i) {
+        pinMode(ledPins[i], SPECIAL);
+    }
+}
+
+
 void semaforInit() {
     stateVector_eeprom.read();
     semaforID_eeprom.read();
 
-    for(uint8_t i = 0; i < 3; ++i) {
-        pinMode(ledPins[i], OUTPUT);
+    if(activeLed) {
+        initLeds();
     }
+    else {
+        initSerial();
+    }
+
     pinMode(button, INPUT_PULLUP);
 
     softApEnable();

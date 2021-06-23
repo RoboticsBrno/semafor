@@ -1,5 +1,4 @@
-#ifndef _SEMAFOR_
-#define _SEMAFOR_
+#pragma once
 
 #include <Arduino.h>
 #include <ESP8266WebServer.h>
@@ -29,21 +28,23 @@ extern EEPROM_data semaforID_eeprom;
 extern uint8_t DNS_PORT;
 extern uint8_t prevMode;
 
+extern bool activeLed;
+
 void setLed(uint8_t ledGPIO, bool on);
 void setLeds(bool red, bool green, bool blue);
 void setLedsAll(bool state);
 bool buttonPressedFor(uint16_t timeMs);
 void printInfo();
 
+void initLeds();
+void initSerial();
+
 void semaforInit();
 void semaforLoop();
+
 
 void handleMonopoly();
 void handleVabicka();
 void handleVlajky();
 void handleTowerDefence();
 void handleHoldToGet();
-
-
-
-#endif // _SEMAFOR_

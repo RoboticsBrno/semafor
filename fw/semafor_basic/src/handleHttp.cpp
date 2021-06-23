@@ -87,6 +87,7 @@ void handleRoot() {
     Page += String(stateVector.ledBrightness[0]);
     Page += F(
                 "' name='brightness'/><br>"
+                "<input type='submit' name='ledserial' value='Prepinac LED/Serial'/><br>"
                 "</form></body></html>");
     server.send(200, "text/html", Page);
     server.client().stop(); // Stop is needed because we sent no content length
@@ -143,6 +144,16 @@ void handleDataSave() {
         stateVector.currentMode = 3;
     else if(server.hasArg("holdToGet"))
         stateVector.currentMode = 4;
+    else if(server.hasArg("ledserial")){
+        activeLed = !activeLed;
+        if(activeLed) {
+            initLeds();
+        }
+        else {
+            initSerial();
+        }        
+    }
+        
 
     stateVector_eeprom.write();
 
