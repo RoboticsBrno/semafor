@@ -10,6 +10,6 @@ struct StateVector{
     uint8_t tdPressShort = 7;
     uint8_t tdPressLong = 12;
     uint8_t holdToGetTimeout = 10;
-    uint8_t randomCheckNum = 111;
+    uint8_t transmittCheckNum = 111;
     bool activeLed = true;
 };

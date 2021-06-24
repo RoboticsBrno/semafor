@@ -50,7 +50,7 @@ void printInfo(semState state);
 void initLeds();
 void initSerial();
 
-void settReceive();
+bool settReceive();
 void settBrodcast();
 
 void semaforInit();

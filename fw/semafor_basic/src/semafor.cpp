@@ -1,8 +1,10 @@
 #include "Arduino.h"
 #include "stateVector.h"
 #include "semafor.h"
+#include <ctype.h>
 
 #define SECOND 1000
+#define MINUTE SECOND*60
 
 String wifi_ssid = "Semafor";
 String wifi_password = "adminadmin";
@@ -83,12 +85,14 @@ void printInfo(semState state) {
 }
 
 void initLeds() {
+    stateVector.activeLed = true;
     for(uint8_t i = 0; i < 3; ++i) {
         pinMode(ledPins[i], OUTPUT);
     }
 }
 
 void initSerial() {
+    stateVector.activeLed = false;
     Serial.begin(115200);
     for(uint8_t i = 0; i < 3; ++i) {
         pinMode(ledPins[i], SPECIAL);
@@ -101,23 +105,24 @@ void semaforInit() {
     semaforID_eeprom.read();
 
     initLeds();
+    // initSerial();
+
 
     pinMode(button, INPUT_PULLUP);
 
-    // Serial.println("Start WiFI");
-    // softApEnable();
-
-    // server.on("/", handleRoot);
-    // server.on("/datasave", handleDataSave);
-    // server.on("/addparam", handleAddParam);
-    //     // put "IP/addParam?id=X" into URL for setting semafor ID
-    // server.onNotFound(handleRoot);
-    // server.on("/style.css", handleStyle);
-    // server.begin();
-
-    // udpSett.begin(1111); 
-
     randomSeed(analogRead(A0));
+
+    delay(500);
+
+    for(int i = 0; i< 3; i++) {
+        setLed(i, true);
+        delay(200);
+    }
+
+    for(int i = 2; i>=0; i--) {
+        setLed(i, false);
+        delay(200);
+    }
 }
 
 void settBrodcast() {
@@ -133,15 +138,17 @@ void settBrodcast() {
         softApEnable();
 
         server.on("/", handleRoot);
+        server.on("/admin", handleAdmin);
+        server.on("/adminsave", handleAdminSave);
         server.on("/datasave", handleDataSave);
         server.on("/addparam", handleAddParam);
-            // put "IP/addParam?id=X" into URL for setting semafor ID
+            // put "IP/addparam?id=X" into URL for setting semafor ID
+            // put "IP/addparam?led=1/0" enable LED / enable Serial
         server.onNotFound(handleRoot);
         server.on("/style.css", handleStyle);
         server.begin();
 
         udpSett.begin(1111);
-
         initBrodcast = false;
     }
 
@@ -156,57 +163,32 @@ void settBrodcast() {
     }
 
     if(sender.loopMs()) {
+        Serial.println("Clients coutn: " + String(wifi_softap_get_station_num()));
         struct station_info *station_list = wifi_softap_get_station_info();
         while (station_list != NULL) {
             IPAddress station_ip = ((&station_list->ip)->addr);
 
-            Serial.println(station_ip.toString());
-
+            // Serial.println(station_ip.toString());
             udpSett.beginPacket(station_ip, 1111);
-            stateVector.randomCheckNum = semaforID;
+            stateVector.transmittCheckNum = semaforID;
             udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
-            // udpSett.print(semaforID);
             udpSett.endPacket();            
 
             station_list = STAILQ_NEXT(station_list, next);
         }
-        
-        wifi_softap_free_station_info();
-        Serial.println();         
+        wifi_softap_free_station_info();    
     }
-
-
-
-
-    // int packetSize = udpSett.parsePacket();
-    // if (packetSize) {
-    //     udpSett.read(&udpCheckKey, sizeof(udpCheckKey));
-
-    //     udpSett.beginPacket(udpSett.remoteIP(), 1111);
-    //     stateVector.randomCheckNum = udpCheckKey;
-    //     // udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
-    //     udpSett.print(udpCheckKey);
-    //     udpSett.endPacket();
-    //     // Serial.println("Send settings - key: " + String(stateVector.gameMode));
-    //     Serial.println("Send settings - key: " + String("Key:" + String(udpCheckKey) + " -> " + String(millis())));
-    // }  
-
-
-
-
 }
 
-void settReceive() {
+bool settReceive() {
     static bool initReceive = true;
     static bool initConnected = true;
     static bool connected = false;
 
     static ArduinoMetronome sender(800);
-    // static uint8_t checkKey = random(1, 250);
 
     if(initReceive) {
-        // udpSett.begin(1111);
-        conntectToWifi();
+        wifiEnableConnect();
         initReceive = false;
     }
 
@@ -218,54 +200,35 @@ void settReceive() {
     }
 
     if(connected) {
-
-        // if(sender.loopMs()) {
-        //     udpSett.beginPacket(wifiIPtest, 1111);
-        //     // udpSett.write(semaforID);
-        //     udpSett.println(udpSett.remoteIP());
-        //     udpSett.endPacket();
-        //     Serial.println("Send Req");
-        // }
-
-        // Serial.println("Send local IP: " + WiFi.localIP().toString());
-        
-        StateVector receive;
-
-        // int packetSize = udpSett.parsePacket();
-        // if (packetSize) {
-
-        //     Serial.print(udpSett.read());
-        //     Serial.println("Recived");
-
-
-        //     udpSett.beginPacket(udpSett.remoteIP(), 1111);
-        //     // udpSett.write(semaforID);
-        //     udpSett.println(WiFi.localIP());
-        //     udpSett.endPacket();
-        //     Serial.println("Send Req");   
+        StateVector receiveVector;
 
         int packetSize = udpSett.parsePacket();
-        if (packetSize) {
-            // udpSett.beginPacket(udpSett.remoteIP(), udpSett.remotePort());
-            // // stateVector.currentMode = millis();
-            // // udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
-            // udpSett.print(millis());
-            // udpSett.endPacket();
-            // // Serial.println("Send settings - key: " + String(stateVector.currentMode));
-            // Serial.println("Send settings - key: " + String(millis()) + udpSett.remoteIP().toString() + String(udpSett.remotePort()));
-                  
-            
-            int len = udpSett.read((char *) &receive, sizeof(receive));
+        if (packetSize) { 
+            int len = udpSett.read((char *) &receiveVector, sizeof(receiveVector));
             if(len>0) {
-                Serial.println("Recived settings key: " + String(receive.randomCheckNum));
+                stateVector = receiveVector;
+                stateVector_eeprom.write();
+                Serial.printf("New settings recieved and updated from Semafor ID: %d", receiveVector.transmittCheckNum);
+
+                // success upload blink
+                for(int i = 0; i < 6; i++) {
+                    setLeds(false, true, true);
+                    delay(80);
+                    setLeds(true, true, false);
+                    delay(80);
+                }
+                setLeds(false, false, false);
+                wifiDisable();
+
+                return true; // jump to Normal mode
             }
             else {
-                Serial.println("ERR");
-            }
-            
+                Serial.printf("Error receive new settings from Semafor ID: %d", receiveVector.transmittCheckNum);
+            } 
         }
-
     }
+
+    return false;
 
 
 
@@ -273,40 +236,35 @@ void settReceive() {
 
 
 semState semaforState() {
-    static semState lastState = S_NORMAL;
-    semState nowState = S_NORMAL;
+
+    semState nowState = S_RECEIVE;
 
     static bool pressedOnStart = false;
     static int startPressedTime;
     static int startTime = millis();
     int nowTime = millis();
 
-    if(lastState == S_BRODCAST) {
-        return S_BRODCAST; // all time brodcast
-    }
-
-
-    if(nowTime-startTime < 120 * SECOND) {
+    if(nowTime-startTime < 2 * MINUTE) {
         bool buttonState = !digitalRead(button);
 
         if(!buttonState) {
             pressedOnStart = false;
-            nowState = S_RECEIVE; // if not pressed + to 120 sec from start
+            nowState = S_RECEIVE; // if not pressed + until specific time
         }
-        else if(buttonState && pressedOnStart == false) {
+        else if(buttonState && pressedOnStart == false) { // first press
             startPressedTime = millis();
             pressedOnStart = true;
+            nowState = S_RECEIVE;
         }
-        else if(pressedOnStart && nowTime-startPressedTime > 2 * SECOND) {
-            nowState = S_BRODCAST; //if pressed for 3 sec + to 120 sec from start
+        else if(pressedOnStart && nowTime-startPressedTime > 3 * SECOND) {
+            nowState = S_BRODCAST; //if pressed for 3 sec + until specific time
         }
-
     }
     else {
         nowState = S_NORMAL; // else
+        WiFi.disconnect(true);
     }
 
-    lastState = nowState;
     return nowState;
 }
 
