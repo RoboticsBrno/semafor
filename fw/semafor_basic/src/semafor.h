@@ -45,7 +45,7 @@ void setLed(uint8_t ledGPIO, bool on);
 void setLeds(bool red, bool green, bool blue);
 void setLedsAll(bool state);
 bool buttonPressedFor(uint16_t timeMs);
-void printInfo();
+void printInfo(semState state);
 
 void initLeds();
 void initSerial();

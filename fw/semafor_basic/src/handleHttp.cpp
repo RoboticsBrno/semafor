@@ -27,7 +27,7 @@ void handleRoot() {
                 "</h1>"
                 "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu.<br>"
                 "Aktuálně zvolený herní mód: ")) +
-        String(stateVector.currentMode);
+        String(stateVector.gameMode);
 
    
     Page += F(
@@ -138,15 +138,15 @@ void handleDataSave() {
     }
     
     if(server.hasArg("monopoly"))
-        stateVector.currentMode = 0;
+        stateVector.gameMode = 0;
     else if(server.hasArg("vabicka"))
-        stateVector.currentMode = 1;
+        stateVector.gameMode = 1;
     else if(server.hasArg("vlajky"))
-        stateVector.currentMode = 2;
+        stateVector.gameMode = 2;
     else if(server.hasArg("towerDefence"))
-        stateVector.currentMode = 3;
+        stateVector.gameMode = 3;
     else if(server.hasArg("holdToGet"))
-        stateVector.currentMode = 4;
+        stateVector.gameMode = 4;
     else if(server.hasArg("ledserial")){
         if(stateVector.activeLed == false) {
             initSerial();

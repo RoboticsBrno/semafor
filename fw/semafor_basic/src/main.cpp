@@ -7,7 +7,7 @@ void setup() {
 
     uint16_t periodCycle = 20;
     ArduinoMetronome loopMain(periodCycle);
-    ArduinoMetronome loopPrint(4000);
+    ArduinoMetronome loopPrint(10000);
     // ArduinoMetronome loopSettings(10);
 
     semState sState;
@@ -25,7 +25,7 @@ void setup() {
         // }
 
         if(loopPrint.loopMs()) {
-            // printInfo();
+            printInfo(sState);
         }   
 
         
@@ -34,7 +34,7 @@ void setup() {
             switch (sState)
             {
             case S_RECEIVE:
-                Serial.println("S_RECEIVE");
+                Serial.printf("\rS_RECEIVE");
                 settReceive();
 
                 
@@ -42,13 +42,13 @@ void setup() {
                 break;
 
             case S_NORMAL:
-                Serial.println("S_NORMAL");
+                Serial.printf("\rS_NORMAL");
 
                 semaforLoop();
                 break;
             
             case S_BRODCAST:
-                Serial.println("S_BRODCAST");
+                Serial.printf("\rS_BRODCAST");
                 settBrodcast();
 
                 break;

@@ -7,6 +7,7 @@
 String wifi_ssid = "Semafor";
 String wifi_password = "adminadmin";
 IPAddress wifiIP(192, 168, 1, 1);
+IPAddress wifiIPtest(192, 168, 1, 100);
 IPAddress netMsk(255, 255, 255, 0);
 
 DNSServer dnsServer;
@@ -18,9 +19,11 @@ EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
 WiFiUDP udpSett;
+uint8_t udpCheckKey;
 
 uint8_t prevMode = 0;
 uint8_t DNS_PORT = 53;
+
 
 // bool activeLed = false;
 
@@ -68,9 +71,10 @@ bool buttonPressed(uint16_t timeMs, bool activeEnd = 1) {
     return false;
 }
 
-void printInfo() {
+void printInfo(semState state) {
     Serial.printf("semaforID: %d\n", semaforID);
-    Serial.printf("currentMode: %d\n", stateVector.currentMode);
+    Serial.printf("semafor state: %d\n", state);
+    Serial.printf("gameMode: %d\n", stateVector.gameMode);
     Serial.printf("monopolyDelayMin: %d\n", stateVector.monopolyDelayMin);
     Serial.printf("monopolyDelayMax: %d\n", stateVector.monopolyDelayMax);
     Serial.printf("tdPressShort: %d\n", stateVector.tdPressShort);
@@ -96,25 +100,20 @@ void semaforInit() {
     stateVector_eeprom.read();
     semaforID_eeprom.read();
 
-    if(stateVector.activeLed) {
-        initLeds();
-    }
-    else {
-        initSerial();
-    }
+    initLeds();
 
     pinMode(button, INPUT_PULLUP);
 
-    Serial.println("Start WiFI");
-    softApEnable();
+    // Serial.println("Start WiFI");
+    // softApEnable();
 
-    server.on("/", handleRoot);
-    server.on("/datasave", handleDataSave);
-    server.on("/addparam", handleAddParam);
-        // put "IP/addParam?id=X" into URL for setting semafor ID
-    server.onNotFound(handleRoot);
-    server.on("/style.css", handleStyle);
-    server.begin();
+    // server.on("/", handleRoot);
+    // server.on("/datasave", handleDataSave);
+    // server.on("/addparam", handleAddParam);
+    //     // put "IP/addParam?id=X" into URL for setting semafor ID
+    // server.onNotFound(handleRoot);
+    // server.on("/style.css", handleStyle);
+    // server.begin();
 
     // udpSett.begin(1111); 
 
@@ -125,6 +124,7 @@ void settBrodcast() {
     static bool initBrodcast = true;
     static bool blinkCenter = true;
     static ArduinoMetronome blinker(800);
+    static ArduinoMetronome sender(500);
 
     if(initBrodcast) {
         setLeds(true, false, true);
@@ -152,8 +152,47 @@ void settBrodcast() {
         else {
             setLeds(true, false, true);
         }
-        blinkCenter = !blinkCenter;
+        blinkCenter = !blinkCenter;            
     }
+
+    if(sender.loopMs()) {
+        struct station_info *station_list = wifi_softap_get_station_info();
+        while (station_list != NULL) {
+            IPAddress station_ip = ((&station_list->ip)->addr);
+
+            Serial.println(station_ip.toString());
+
+            udpSett.beginPacket(station_ip, 1111);
+            stateVector.randomCheckNum = semaforID;
+            udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
+            // udpSett.print(semaforID);
+            udpSett.endPacket();            
+
+            station_list = STAILQ_NEXT(station_list, next);
+        }
+        
+        wifi_softap_free_station_info();
+        Serial.println();         
+    }
+
+
+
+
+    // int packetSize = udpSett.parsePacket();
+    // if (packetSize) {
+    //     udpSett.read(&udpCheckKey, sizeof(udpCheckKey));
+
+    //     udpSett.beginPacket(udpSett.remoteIP(), 1111);
+    //     stateVector.randomCheckNum = udpCheckKey;
+    //     // udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
+    //     udpSett.print(udpCheckKey);
+    //     udpSett.endPacket();
+    //     // Serial.println("Send settings - key: " + String(stateVector.gameMode));
+    //     Serial.println("Send settings - key: " + String("Key:" + String(udpCheckKey) + " -> " + String(millis())));
+    // }  
+
+
+
 
 }
 
@@ -162,37 +201,73 @@ void settReceive() {
     static bool initConnected = true;
     static bool connected = false;
 
+    static ArduinoMetronome sender(800);
+    // static uint8_t checkKey = random(1, 250);
+
     if(initReceive) {
+        // udpSett.begin(1111);
         conntectToWifi();
         initReceive = false;
     }
 
-    if(WiFi.status() == WL_CONNECTED) {
+    if(initConnected && WiFi.status() == WL_CONNECTED) {
+        initConnected = false;
         connected = true;
+        udpSett.begin(1111);
         Serial.println("Connected to WiFi");
     }
 
+    if(connected) {
 
-    // udpSett.beginPacket(wifiIP, 1111);
-    // udpSett.println(WiFi.localIP());
-    // udpSett.endPacket();
+        // if(sender.loopMs()) {
+        //     udpSett.beginPacket(wifiIPtest, 1111);
+        //     // udpSett.write(semaforID);
+        //     udpSett.println(udpSett.remoteIP());
+        //     udpSett.endPacket();
+        //     Serial.println("Send Req");
+        // }
 
-    // Serial.println("Send local IP: " + WiFi.localIP().toString());
-    
-    // StateVector receive;
-
-    // int packetSize = udpSett.parsePacket();
-    // if (packetSize) {
-
-    //     int len = udpSett.read((char *) &receive, sizeof(receive));
-    //     if(len>0) {
-    //         Serial.println("Recived settings: " + String(receive.currentMode));
-    //     }
-    //     else {
-    //         Serial.println("ERR");
-    //     }
+        // Serial.println("Send local IP: " + WiFi.localIP().toString());
         
-    // }
+        StateVector receive;
+
+        // int packetSize = udpSett.parsePacket();
+        // if (packetSize) {
+
+        //     Serial.print(udpSett.read());
+        //     Serial.println("Recived");
+
+
+        //     udpSett.beginPacket(udpSett.remoteIP(), 1111);
+        //     // udpSett.write(semaforID);
+        //     udpSett.println(WiFi.localIP());
+        //     udpSett.endPacket();
+        //     Serial.println("Send Req");   
+
+        int packetSize = udpSett.parsePacket();
+        if (packetSize) {
+            // udpSett.beginPacket(udpSett.remoteIP(), udpSett.remotePort());
+            // // stateVector.currentMode = millis();
+            // // udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
+            // udpSett.print(millis());
+            // udpSett.endPacket();
+            // // Serial.println("Send settings - key: " + String(stateVector.currentMode));
+            // Serial.println("Send settings - key: " + String(millis()) + udpSett.remoteIP().toString() + String(udpSett.remotePort()));
+                  
+            
+            int len = udpSett.read((char *) &receive, sizeof(receive));
+            if(len>0) {
+                Serial.println("Recived settings key: " + String(receive.randomCheckNum));
+            }
+            else {
+                Serial.println("ERR");
+            }
+            
+        }
+
+    }
+
+
 
 }
 
@@ -211,19 +286,19 @@ semState semaforState() {
     }
 
 
-    if(nowTime-startTime < 20 * SECOND) {
+    if(nowTime-startTime < 120 * SECOND) {
         bool buttonState = !digitalRead(button);
 
         if(!buttonState) {
             pressedOnStart = false;
-            nowState = S_RECEIVE; // if not pressed + to 20 sec from start
+            nowState = S_RECEIVE; // if not pressed + to 120 sec from start
         }
         else if(buttonState && pressedOnStart == false) {
             startPressedTime = millis();
             pressedOnStart = true;
         }
         else if(pressedOnStart && nowTime-startPressedTime > 2 * SECOND) {
-            nowState = S_BRODCAST; //if pressed for 3 sec + to 20 sec from start
+            nowState = S_BRODCAST; //if pressed for 3 sec + to 120 sec from start
         }
 
     }
@@ -237,7 +312,7 @@ semState semaforState() {
 
 
 void semaforLoop() {
-    switch(stateVector.currentMode) {
+    switch(stateVector.gameMode) {
         case 0:
             handleMonopoly();
             break;
@@ -254,9 +329,9 @@ void semaforLoop() {
             handleHoldToGet();
             break;
         default:
-            stateVector.currentMode = 0;
+            stateVector.gameMode = 0;
     }
-    prevMode = stateVector.currentMode;
+    prevMode = stateVector.gameMode;
 }
 
 
@@ -264,7 +339,7 @@ void handleMonopoly() {
     static uint32_t changeDelay = 0;
     static uint32_t lastChange = 0;
     static bool lightStateRG = 1; //0-red, 1-green
-    if(stateVector.currentMode != prevMode) {
+    if(stateVector.gameMode != prevMode) {
         lightStateRG = 0;
         lastChange = millis();
     }
@@ -278,7 +353,7 @@ void handleMonopoly() {
 }
 void handleVabicka() {
     static int8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
-    if(stateVector.currentMode != prevMode)
+    if(stateVector.gameMode != prevMode)
         lightState = 0;
     if(buttonPressed(debounce, 0)) {
         ++lightState;
@@ -291,7 +366,7 @@ void handleVabicka() {
 }
 void handleVlajky() {
     static int8_t lightState = 0;  //0-R, 1-G, 2-B, 3-nothing
-    if(stateVector.currentMode != prevMode)
+    if(stateVector.gameMode != prevMode)
         lightState = 0;
     if(buttonPressed(debounce, 0)) {
         ++lightState;
@@ -308,7 +383,7 @@ void handleTowerDefence() {
     static uint8_t buildState = 0; //0-building, 1-short flashing, 2-destroying, 3-flashing
     static bool prevButtonState = 0, buttonState = 0;
     static uint32_t buttonPressedSince = 0;
-    if(stateVector.currentMode != prevMode) {
+    if(stateVector.gameMode != prevMode) {
         buildState = 0;
         lightState = 0;
     }
