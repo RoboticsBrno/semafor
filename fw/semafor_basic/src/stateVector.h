@@ -1,15 +1,15 @@
-#ifndef _STATE_VECTOR_
-#define _STATE_VECTOR_
+#pragma once
 
 #include <Arduino.h>
 
 struct StateVector{
     uint8_t ledBrightness[3] = {255, 255, 255};
-    uint8_t currentMode = 0;
+    uint8_t gameMode = 0;
     uint16_t monopolyDelayMin = 10;
     uint16_t monopolyDelayMax = 30;
     uint8_t tdPressShort = 7;
     uint8_t tdPressLong = 12;
     uint8_t holdToGetTimeout = 10;
+    uint8_t transmittCheckNum = 111;
+    bool activeLed = true;
 };
-#endif /*_STATE_VETOR_*/

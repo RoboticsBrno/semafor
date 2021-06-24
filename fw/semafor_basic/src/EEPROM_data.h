@@ -1,5 +1,4 @@
-#ifndef _EEPROM_DATA_
-#define _EEPROM_DATA_
+#pragma once
 
 #define EEPROM_LENGTH 255   //[bytes]
 
@@ -13,5 +12,3 @@ public:
     void write();
     void read();
 };
-
-#endif /*_EEPROM_DATA_*/

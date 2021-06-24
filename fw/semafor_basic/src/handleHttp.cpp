@@ -2,12 +2,6 @@
 #include "handleHttp.h"
 #include "web_files.h"
 
-/* Soft AP network parameters */
-IPAddress apIP(192, 168, 1, 1);
-IPAddress netMsk(255, 255, 255, 0);
-
-
-
 void handleRoot() {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     server.sendHeader("Pragma", "no-cache");
@@ -20,15 +14,15 @@ void handleRoot() {
                 "<meta charset='UTF-8'>"
                 "<link rel='stylesheet' type='text/css' href='style.css'>"
                 "<meta name='viewport' content='width=device-width'>"
-                "<title>CaptivePortal</title></head><body>"
+                "<title>Semafor manager</title></head><body>"
                 "<h1>Nastavení semaforu #");
     Page +=
         String(semaforID) +
         String(F(
                 "</h1>"
-                "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity po restartu.<br>"
+                "Zvol parametry herních módů. Aktuálně nastavené parametry jsou zobrazeny v polích pro zadávání. Uložení nových parametrů spolu s výběrem herního módu proveď příslušným tlačítkem. Parametry a aktuálně zvolený herní mód budou uloženy a použity i po restartu.<br>"
                 "Aktuálně zvolený herní mód: ")) +
-        String(stateVector.currentMode);
+        String(stateVector.gameMode);
 
    
     Page += F(
@@ -87,9 +81,87 @@ void handleRoot() {
     Page += String(stateVector.ledBrightness[0]);
     Page += F(
                 "' name='brightness'/><br>"
+                "<input type='submit' name='led' value='Ulož jas LEDek'/><br>");
+    Page += F(
+                "<br>"
                 "</form></body></html>");
     server.send(200, "text/html", Page);
     server.client().stop(); // Stop is needed because we sent no content length
+}
+
+
+void handleAdmin() {
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+
+    String Page;
+    Page += F(
+                "<!DOCTYPE html><html lang='cz'><head>"
+                "<meta name='theme-color' content='#404040' />"
+                "<meta charset='UTF-8'>"
+                "<link rel='stylesheet' type='text/css' href='style.css'>"
+                "<meta name='viewport' content='width=device-width'>"
+                "<title>ADMIN! Semafor manager</title></head><body>"
+                "<h1>ADMIN Nastavení semaforu #");
+    Page +=     String(semaforID);
+   
+    Page += F(
+                "</h1>"
+                "<form method='POST' action='adminsave'>"
+                "<h2>Nastavení ID</h2>"
+                "ID senzoru [číslo > 0]:<br>"
+                "<input type='text' placeholder='");
+    Page += String(semaforID);
+    Page += F(
+                "' name='senID'/><br>"
+                "<input type='submit' value='Ulož nové ID'/><br>");
+    Page += F(
+                "<h2>Prepinac LED/Serial</h2>"
+                "Ledky jsou ativni: ");
+    Page += String(stateVector.activeLed);
+    Page += F(
+                "<br>"
+                "<input type='submit' name='ledserial' value='Prepinac LED/Serial'/><br>"
+                "</form></body></html>");
+
+
+    server.send(200, "text/html", Page);
+    server.client().stop(); // Stop is needed because we sent no content length    
+}
+
+void handleAdminSave() {
+    Serial.println("handleAdminSave");
+    char buffer[10];
+    int32_t temp;
+
+
+    server.arg("senID").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        semaforID = temp;
+    }
+
+    if(server.hasArg("ledserial")){
+        if(stateVector.activeLed == true) {
+            initSerial();
+            stateVector.activeLed = false;
+        }
+        else {
+            initLeds();
+            stateVector.activeLed = true;
+        }      
+    } 
+
+    stateVector_eeprom.write();
+
+    server.sendHeader("Location", "/admin", true);
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+
 }
 
 void handleDataSave() {
@@ -134,15 +206,15 @@ void handleDataSave() {
     }
     
     if(server.hasArg("monopoly"))
-        stateVector.currentMode = 0;
+        stateVector.gameMode = 0;
     else if(server.hasArg("vabicka"))
-        stateVector.currentMode = 1;
+        stateVector.gameMode = 1;
     else if(server.hasArg("vlajky"))
-        stateVector.currentMode = 2;
+        stateVector.gameMode = 2;
     else if(server.hasArg("towerDefence"))
-        stateVector.currentMode = 3;
+        stateVector.gameMode = 3;
     else if(server.hasArg("holdToGet"))
-        stateVector.currentMode = 4;
+        stateVector.gameMode = 4;
 
     stateVector_eeprom.write();
 
@@ -156,16 +228,27 @@ void handleDataSave() {
 
 void handleAddParam() {
     char buffer[10];
-    int32_t temp;
 
     if(server.hasArg("id")) {
         server.arg("id").toCharArray(buffer, sizeof(buffer) - 1);
-        temp = atoi(buffer);
-        if(temp >= 0) {
-            semaforID = temp;
+        int sid = atoi(buffer);
+        if(sid >= 0) {
+            semaforID = sid;
             semaforID_eeprom.write();
         }
     }
+
+    //1 = neable led / 0 = enable serial
+    if(server.hasArg("led")) {
+        server.arg("led").toCharArray(buffer, sizeof(buffer) - 1);
+        int led = atoi(buffer);
+        if(led == 1) {
+            initLeds();
+        }
+        else {
+            initSerial();
+        }
+    } 
 
     server.sendHeader("Location", "/", true);
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -180,19 +263,27 @@ void handleStyle() {
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
-void softApEnable() {
+void wifiEnableConnect() {
+    WiFi.begin(wifi_ssid, wifi_password);
+}
 
-    WiFi.softAPConfig(apIP, apIP, netMsk);
-    WiFi.softAP(softAP_ssid, softAP_password);
+void wifiDisable() {
+    WiFi.disconnect(true);
+}
+
+void softApEnable() {
+    wifiDisable();
+    WiFi.softAPConfig(wifiIP, wifiIP, netMsk);
+    WiFi.softAP(wifi_ssid, wifi_password);
     delay(500); // Without delay I've seen the IP address blank
 
-    /* Setup the DNS server redirecting all the domains to the apIP */
+    /* Setup the DNS server redirecting all the domains to the wifiIP */
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer.start(DNS_PORT, "*", apIP);
+    dnsServer.start(DNS_PORT, "*", wifiIP);
 }
 
 void softApDisable() {
-    WiFi.softAPdisconnect(1);
+    WiFi.softAPdisconnect(true);
 }
 
 bool isIp(String str) {
