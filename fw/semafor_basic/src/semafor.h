@@ -46,7 +46,6 @@ void setLeds(bool red, bool green, bool blue);
 void setLedsAll(bool state);
 bool buttonPressedFor(uint16_t timeMs);
 void printInfo(semState state);
-
 void initLeds();
 void initSerial();
 
@@ -64,3 +63,5 @@ void handleVabicka();
 void handleVlajky();
 void handleTowerDefence();
 void handleHoldToGet();
+void handleMinutka();
+void handleMikrovlnka();

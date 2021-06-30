@@ -26,7 +26,10 @@ void handleRoot() {
 
    
     Page += F(
-                "<form method='POST' action='datasave'>"
+                "<form method='POST' action='datasave'>");
+
+    // Monopoly (0)
+    Page += F( 
                 "<h2>Monopoly (0)</h2>"
                 "Přeblikávání mezi červenou a zelenou v náhodném intervalu.<br>"
                 "Minimální doba změny [sekundy]:<br>"
@@ -41,16 +44,19 @@ void handleRoot() {
                 "' name='delayMax'/><br>"
                 "<input type='submit' name='monopoly' value='Ulož a aktivuj monopoly'/><br>");
     
+    // Vábička (1)
     Page += F(
                 "<h2>Vábička (1)</h2>"
                 "Stisknutím tlačítka se střídají barvy R, G, B.<br>"
                 "<input type='submit' name='vabicka' value='Aktivuj vábičku'/><br>");
 
+    // Vlajky (2)
     Page += F(
                 "<h2>Vlajky (2)</h2>"
                 "Stisknutím tlačítka se střídají barvy R, G, B a tma.<br>"
                 "<input type='submit' name='vlajky' value='Aktivuj vlajky'/><br>");
 
+    // Tower Defence (3)
     Page += F(
                 "<h2>Tower Defence (3)</h2>"
                 "2 módy - stavba a rozebírání zdi. Přepínání mezi nimi dlouhým stiskem tlačítka. Při stavbě zdi mačkání tlačítka postupně rozsvěcí LEDky. Při rozebírání dlouhý stisk tlačítka postupně zhasíná LEDky. Po zhasnutí všech se semafor rozbliká.<br>"
@@ -65,15 +71,47 @@ void handleRoot() {
     Page += F(            
                 "' name='pressLong'/><br>"
                 "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>");
+
+    // Hold to Get (4)
     Page += F(
                 "<h2>Hold to Get (4)</h2>"
-                "Při stisku tlačítka zabliká a rozsvítí se červeně. Po uplynutí nastavené doby stisku zabliká a rozsvítí se zeleně. Poté opět zhasne.<br>"
-                "Doba stisku tlačítka [sekundy]:<br>"
+                "Jednoho krásného dne to někdo doprogramuje :-)");
+    //             "Při stisku tlačítka zabliká a rozsvítí se červeně. Po uplynutí nastavené doby stisku zabliká a rozsvítí se zeleně. Poté opět zhasne.<br>"
+    //             "Doba stisku tlačítka [sekundy]:<br>"
+    //             "<input type='text' placeholder='");
+    // Page += String(stateVector.holdToGetTimeout);
+    // Page += F(            
+    //             "' name='holdToGet_press'/><br>"
+    //             "<input type='submit' name='holdToGet' value='Ulož a aktivuj Hold to Get'/><br>");
+
+
+    // Minutka (5)
+    Page += F( 
+                "<h2>Minutka (5)</h2>"
+                "Semafor zhasne všechny LEDky a čeká na zmáčknutí tlačítka, poté se celý rozsvítí.<br>"
+                "Po uplynutí 1/3 času zhasne modrou LEDku, po 2/3 zhasne i zelenou LEDku.<br>"
+                "10 vteřin před koncem začne blikat. Konec je signalizován zhasnutím všech LEDek.<br>"
+                "Celkový čas [minuty]:<br>"
                 "<input type='text' placeholder='");
-    Page += String(stateVector.holdToGetTimeout);
-    Page += F(            
-                "' name='holdToGet_press'/><br>"
-                "<input type='submit' name='holdToGet' value='Ulož a aktivuj Hold to Get'/><br>");
+    Page += String(stateVector.minutkaTimeSecAll/60);
+    Page += F(
+                "' name='minutkaTimeMinAll'/><br>"
+                "<input type='submit' name='minutka' value='Ulož a aktivuj minutku'/><br>");
+
+    // Mikrovlnka (5)
+    Page += F( 
+                "<h2>Mikrovlnka (6)</h2>"
+                "Semafor rozsvítí všechny LEDky a čeká na zmáčknutí tlačítka, poté se celý zhasne.<br>"
+                "Po uplynutí 1/3 času rozsvítí modrou LEDku, po 2/3 rozsvítí i zelenou LEDku.<br>"
+                "10 vteřin před koncem začne blikat. Konec je signalizován rozsvícením všech LEDek.<br>"
+                "Celkový čas [minuty]:<br>"
+                "<input type='text' placeholder='");
+    Page += String(stateVector.mikrovlnkaTimeSecAll/60);
+    Page += F(
+                "' name='mikrovlnkaTimeMinAll'/><br>"
+                "<input type='submit' name='mikrovlnka' value='Ulož a aktivuj mikrovlnku'/><br>");                
+
+    // Nastavení jasu LEDek
     Page += F(
                 "<h2>Nastavení jasu LEDek</h2>"
                 "Nastav hodnotu 1-255 od nejnižšího po nejvyšší jas:<br>"
@@ -81,14 +119,127 @@ void handleRoot() {
     Page += String(stateVector.ledBrightness[0]);
     Page += F(
                 "' name='brightness'/><br>"
-                "<input type='submit' name='led' value='Ulož jas LEDek'/><br>");
-    Page += F(
-                "<br>"
-                "</form></body></html>");
+                "<input type='submit' name='led' value='Ulož jas LEDek'/><br>"
+                "<br>");
+    
+    // End form and page
+    Page += F("</form></body></html>");
+
     server.send(200, "text/html", Page);
     server.client().stop(); // Stop is needed because we sent no content length
 }
 
+
+
+void handleDataSave() {
+    Serial.println("handlaDataSave");
+    char buffer[10];
+    int32_t temp;
+
+    server.arg("delayMin").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.monopolyDelayMin = temp;
+    }
+
+    server.arg("delayMax").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.monopolyDelayMax = temp;
+    }
+
+    server.arg("pressShort").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.tdPressShort = temp;
+    }
+
+    server.arg("pressLong").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.tdPressLong = temp;
+    }
+
+    server.arg("holdToGet_press").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.holdToGetTimeout = temp;
+    }
+
+    server.arg("minutkaTimeMinAll").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.minutkaTimeSecAll = temp*60;
+    }
+
+    server.arg("mikrovlnkaTimeMinAll").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.mikrovlnkaTimeSecAll = temp*60;
+    }
+
+    server.arg("brightness").toCharArray(buffer, sizeof(buffer) - 1);
+    temp = atoi(buffer);
+    if(temp > 0) {
+        stateVector.ledBrightness[0] = temp;
+    }
+    
+    if(server.hasArg("monopoly"))
+        stateVector.gameMode = 0;
+    else if(server.hasArg("vabicka"))
+        stateVector.gameMode = 1;
+    else if(server.hasArg("vlajky"))
+        stateVector.gameMode = 2;
+    else if(server.hasArg("towerDefence"))
+        stateVector.gameMode = 3;
+    else if(server.hasArg("holdToGet"))
+        stateVector.gameMode = 4;
+    else if(server.hasArg("minutka"))
+        stateVector.gameMode = 5;
+    else if(server.hasArg("mikrovlnka"))
+        stateVector.gameMode = 6;
+
+    stateVector_eeprom.write();
+
+    server.sendHeader("Location", "/", true);
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+}
+
+void handleAddParam() {
+    char buffer[10];
+
+    if(server.hasArg("id")) {
+        server.arg("id").toCharArray(buffer, sizeof(buffer) - 1);
+        int sid = atoi(buffer);
+        if(sid >= 0) {
+            semaforID = sid;
+            semaforID_eeprom.write();
+        }
+    }
+
+    //1 = neable led / 0 = enable serial
+    if(server.hasArg("led")) {
+        server.arg("led").toCharArray(buffer, sizeof(buffer) - 1);
+        int led = atoi(buffer);
+        if(led == 1) {
+            initLeds();
+        }
+        else {
+            initSerial();
+        }
+    } 
+
+    server.sendHeader("Location", "/", true);
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+}
 
 void handleAdmin() {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -164,100 +315,6 @@ void handleAdminSave() {
 
 }
 
-void handleDataSave() {
-    Serial.println("handlaDataSave");
-    char buffer[10];
-    int32_t temp;
-
-    server.arg("delayMin").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.monopolyDelayMin = temp;
-    }
-
-    server.arg("delayMax").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.monopolyDelayMax = temp;
-    }
-
-    server.arg("pressShort").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.tdPressShort = temp;
-    }
-
-    server.arg("pressLong").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.tdPressLong = temp;
-    }
-
-    server.arg("holdToGet_press").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.holdToGetTimeout = temp;
-    }
-
-    server.arg("brightness").toCharArray(buffer, sizeof(buffer) - 1);
-    temp = atoi(buffer);
-    if(temp > 0) {
-        stateVector.ledBrightness[0] = temp;
-    }
-    
-    if(server.hasArg("monopoly"))
-        stateVector.gameMode = 0;
-    else if(server.hasArg("vabicka"))
-        stateVector.gameMode = 1;
-    else if(server.hasArg("vlajky"))
-        stateVector.gameMode = 2;
-    else if(server.hasArg("towerDefence"))
-        stateVector.gameMode = 3;
-    else if(server.hasArg("holdToGet"))
-        stateVector.gameMode = 4;
-
-    stateVector_eeprom.write();
-
-    server.sendHeader("Location", "/", true);
-    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    server.sendHeader("Pragma", "no-cache");
-    server.sendHeader("Expires", "-1");
-    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    server.client().stop(); // Stop is needed because we sent no content length
-}
-
-void handleAddParam() {
-    char buffer[10];
-
-    if(server.hasArg("id")) {
-        server.arg("id").toCharArray(buffer, sizeof(buffer) - 1);
-        int sid = atoi(buffer);
-        if(sid >= 0) {
-            semaforID = sid;
-            semaforID_eeprom.write();
-        }
-    }
-
-    //1 = neable led / 0 = enable serial
-    if(server.hasArg("led")) {
-        server.arg("led").toCharArray(buffer, sizeof(buffer) - 1);
-        int led = atoi(buffer);
-        if(led == 1) {
-            initLeds();
-        }
-        else {
-            initSerial();
-        }
-    } 
-
-    server.sendHeader("Location", "/", true);
-    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    server.sendHeader("Pragma", "no-cache");
-    server.sendHeader("Expires", "-1");
-    server.send(302, "text/plain", "");    // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    server.client().stop(); // Stop is needed because we sent no content length
-}
-
 void handleStyle() {
     server.send(200, "text/css", style);
     server.client().stop(); // Stop is needed because we sent no content length
@@ -284,23 +341,4 @@ void softApEnable() {
 
 void softApDisable() {
     WiFi.softAPdisconnect(true);
-}
-
-bool isIp(String str) {
-  for (size_t i = 0; i < str.length(); i++) {
-    int c = str.charAt(i);
-    if (c != '.' && (c < '0' || c > '9')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-String toStringIp(IPAddress ip) {
-  String res = "";
-  for (int i = 0; i < 3; i++) {
-    res += String((ip >> (8 * i)) & 0xFF) + ".";
-  }
-  res += String(((ip >> 8 * 3)) & 0xFF);
-  return res;
 }

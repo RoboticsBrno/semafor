@@ -286,6 +286,12 @@ void semaforLoop() {
         case 4:
             handleHoldToGet();
             break;
+        case 5:
+            handleMinutka();
+            break;
+        case 6:
+            handleMikrovlnka();
+            break;
         default:
             stateVector.gameMode = 0;
     }
@@ -419,7 +425,6 @@ void handleTowerDefence() {
                 buildState = 0;
                 lightState = -1;
             }
-            //lightState = buildState ? lightState + 1 : -1;
         }
     }
     else {
@@ -434,4 +439,147 @@ void handleTowerDefence() {
 
 void handleHoldToGet() {
     ;
+    // static ArduinoMetronome blinker(500, 4);
+    // static uint8_t state = 0;
+
+    // if(blinker.counterLoop()) {
+    //     if(blinker.loopMs()) {
+    //         if(blinker.counterNowGet()%2) {
+    //             setLedsAll(0);    
+    //         }
+    //         else {
+    //             setLedsAll(1);            
+    //         }
+
+
+    //         blinker.counterNowIncrease();
+    //     }
+    // } else {
+    //     setLeds(1,0,1);
+    //     Serial.println("END");
+    // }
+}
+
+void handleMinutka() {
+    static uint8_t state = 0;
+    static uint16_t timeStart;
+    uint16_t timeNow = millis()/1000;
+    uint16_t thirdOfTime = stateVector.minutkaTimeSecAll/3;
+
+    switch (state)
+    {
+    case 0: // wait on start
+        if(!digitalRead(button)) {
+            state = 1;
+        }
+        break;
+    case 1: // all leds on
+        setLeds(true, true, true);
+        state = 2;
+        timeStart = millis()/1000;
+        break;
+    case 2:
+        if(timeNow-timeStart > thirdOfTime) {
+            setLeds(true, true, false);
+            state = 3;
+        }
+        break;
+    case 3:
+        if(timeNow-timeStart > thirdOfTime*2) {
+            setLeds(true, false, false);
+            state = 4;
+        }
+        break;
+    case 4:
+        if(timeNow-timeStart > (stateVector.minutkaTimeSecAll - 10)) {
+            state = 5;
+        }
+        break;
+
+    case 5: // blink 10 seconds before end
+        static bool blinkCenter = true;
+        static ArduinoMetronome blinker(800);    
+
+        if(timeNow-timeStart > stateVector.minutkaTimeSecAll) {
+            setLedsAll(false);
+            state = 6;
+        }
+
+        if(blinker.loopMs()) {
+            if(blinkCenter) {
+                setLedsAll(true);
+            }
+            else {
+                setLedsAll(false);
+            }
+            blinkCenter = !blinkCenter;            
+        }
+        break;            
+
+    case 6:
+        break;
+    }
+}
+
+
+void handleMikrovlnka() {
+    static uint8_t state = 0;
+    static uint16_t timeStart;
+    uint16_t timeNow = millis()/1000;
+    uint16_t thirdOfTime = stateVector.minutkaTimeSecAll/3;
+
+    switch (state)
+    {
+    case 0: // all leds light before start
+        setLedsAll(true);
+        state = 1;
+
+    case 1: // wait on start
+        if(!digitalRead(button)) {
+            setLedsAll(false);
+            timeStart = millis()/1000;
+            state = 2;
+        }
+        break;
+    case 2:
+        if(timeNow-timeStart > thirdOfTime) {
+            setLeds(false, false, true);
+            state = 3;
+        }
+        break;
+    case 3:
+        if(timeNow-timeStart > thirdOfTime*2) {
+            setLeds(false, true, true);
+            state = 4;
+        }
+        break;
+    case 4:
+        if(timeNow-timeStart > (stateVector.minutkaTimeSecAll - 10)) {
+            state = 5;
+        }
+        break;
+
+    case 5: // blink 10 seconds before end
+        static bool blinkCenter = true;
+        static ArduinoMetronome blinker(800);    
+
+        if(timeNow-timeStart > stateVector.minutkaTimeSecAll) {
+            setLedsAll(true);
+            state = 6;
+        }
+
+        if(blinker.loopMs()) {
+            if(blinkCenter) {
+                setLedsAll(true);
+            }
+            else {
+                setLedsAll(false);
+            }
+            blinkCenter = !blinkCenter;            
+        }
+        break;            
+
+    case 6:
+        break;
+    }
 }
