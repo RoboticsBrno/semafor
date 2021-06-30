@@ -8,10 +8,18 @@ void setup() {
     uint16_t periodCycle = 20;
     ArduinoMetronome loopMain(periodCycle);
     ArduinoMetronome loopPrint(10000);
+    ArduinoMetronome loopSerialRead(50);
 
     semState sState;
 
     semaforInit();
+
+
+    // while (digitalRead(button))
+    // {
+    //     setLedsAll(1);
+    //     delay(50);
+    // }    
 
     sState = S_RECEIVE; // first start mode
 
@@ -22,7 +30,7 @@ void setup() {
 
         if(loopPrint.loopMs()) {
             printInfo(sState);
-        }   
+        }            
  
         if(loopMain.loopMs()) {
             
