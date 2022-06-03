@@ -468,7 +468,7 @@ void handleMinutka() {
 
     switch (state)
     {
-    case 0: // wait on start
+    case 0: // wait on start, leds off
         if(!digitalRead(button)) {
             state = 1;
         }
@@ -517,6 +517,7 @@ void handleMinutka() {
         break;            
 
     case 6:
+        state = 0;
         break;
     }
 }
