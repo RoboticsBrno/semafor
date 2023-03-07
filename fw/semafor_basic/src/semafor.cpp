@@ -17,9 +17,14 @@ ESP8266WebServer server(80);
 
 StateVector stateVector;
 uint8_t semaforID = 0;
+
+// semafor game config
 EEPROM_data stateVector_eeprom(&stateVector, sizeof(stateVector));
+
+// semafor ID
 EEPROM_data semaforID_eeprom(&semaforID, sizeof(semaforID));
 
+// UDP server for sharing settings between semafors
 WiFiUDP udpSett;
 uint8_t udpCheckKey;
 
@@ -69,7 +74,7 @@ bool buttonPressed(uint16_t timeMs, bool activeEnd = 1) {
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -137,6 +142,7 @@ void settBrodcast() {
         Serial.println("Start WiFi");
         softApEnable();
 
+        // server routes
         server.on("/", handleRoot);
         server.on("/admin", handleAdmin);
         server.on("/adminsave", handleAdminSave);
@@ -148,6 +154,8 @@ void settBrodcast() {
         server.on("/style.css", handleStyle);
         server.begin();
 
+
+        // UDP server for sharing settings between semafors
         udpSett.begin(1111);
         initBrodcast = false;
     }
@@ -159,7 +167,7 @@ void settBrodcast() {
         else {
             setLeds(true, false, true);
         }
-        blinkCenter = !blinkCenter;            
+        blinkCenter = !blinkCenter;
     }
 
     if(sender.loopMs()) {
@@ -172,11 +180,11 @@ void settBrodcast() {
             udpSett.beginPacket(station_ip, 1111);
             stateVector.transmittCheckNum = semaforID;
             udpSett.write((const uint8_t *) &stateVector, sizeof(stateVector));
-            udpSett.endPacket();            
+            udpSett.endPacket();
 
             station_list = STAILQ_NEXT(station_list, next);
         }
-        wifi_softap_free_station_info();    
+        wifi_softap_free_station_info();
     }
 }
 
@@ -203,7 +211,7 @@ bool settReceive() {
         StateVector receiveVector;
 
         int packetSize = udpSett.parsePacket();
-        if (packetSize) { 
+        if (packetSize) {
             int len = udpSett.read((char *) &receiveVector, sizeof(receiveVector));
             if(len>0) {
                 stateVector = receiveVector;
@@ -224,7 +232,7 @@ bool settReceive() {
             }
             else {
                 Serial.printf("Error receive new settings from Semafor ID: %d", receiveVector.transmittCheckNum);
-            } 
+            }
         }
     }
 
@@ -375,7 +383,7 @@ void handleTowerDefence() {
                     lightState = 0;
                 else
                     lightState = 3;
-                
+
                 if(flashesCount > 20) {
                     flashesCount = 0;
                     flashStart = 0;
@@ -445,10 +453,10 @@ void handleHoldToGet() {
     // if(blinker.counterLoop()) {
     //     if(blinker.loopMs()) {
     //         if(blinker.counterNowGet()%2) {
-    //             setLedsAll(0);    
+    //             setLedsAll(0);
     //         }
     //         else {
-    //             setLedsAll(1);            
+    //             setLedsAll(1);
     //         }
 
 
@@ -498,7 +506,7 @@ void handleMinutka() {
 
     case 5: // blink 10 seconds before end
         static bool blinkCenter = true;
-        static ArduinoMetronome blinker(800);    
+        static ArduinoMetronome blinker(800);
 
         if(timeNow-timeStart > stateVector.minutkaTimeSecAll) {
             setLedsAll(false);
@@ -512,9 +520,9 @@ void handleMinutka() {
             else {
                 setLedsAll(false);
             }
-            blinkCenter = !blinkCenter;            
+            blinkCenter = !blinkCenter;
         }
-        break;            
+        break;
 
     case 6:
         state = 0;
@@ -562,7 +570,7 @@ void handleMikrovlnka() {
 
     case 5: // blink 10 seconds before end
         static bool blinkCenter = true;
-        static ArduinoMetronome blinker(800);    
+        static ArduinoMetronome blinker(800);
 
         if(timeNow-timeStart > stateVector.minutkaTimeSecAll) {
             setLedsAll(true);
@@ -576,9 +584,9 @@ void handleMikrovlnka() {
             else {
                 setLedsAll(false);
             }
-            blinkCenter = !blinkCenter;            
+            blinkCenter = !blinkCenter;
         }
-        break;            
+        break;
 
     case 6:
         break;

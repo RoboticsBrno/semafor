@@ -19,7 +19,7 @@ void setup() {
     // {
     //     setLedsAll(1);
     //     delay(50);
-    // }    
+    // }
 
     sState = S_RECEIVE; // first start mode
 
@@ -30,36 +30,41 @@ void setup() {
 
         if(loopPrint.loopMs()) {
             printInfo(sState);
-        }            
- 
+        }
+
         if(loopMain.loopMs()) {
-            
+
             switch (sState)
             {
             case S_RECEIVE:
-                Serial.printf("\rS_RECEIVE");
-                sState = semaforState();
+                // Start game and wait for settings (this mode is automaticly deactivated after settings receive or 2 minutes)
 
-                if(settReceive()) {
+                Serial.printf("\rS_RECEIVE");
+                sState = semaforState(); //
+
+                if(settReceive()) { // connec to mother`s ESP and receive settings
                     sState = S_NORMAL; // jump to normal mode after new settings receive
                 }
-                
-                semaforLoop();
+
+                semaforLoop(); // run normal games parallel with settings receive
                 break;
 
             case S_NORMAL:
+                // Normal game mode - WiFi is off and game is running
                 Serial.printf("\rS_NORMAL");
                 semaforLoop();
                 break;
-            
+
             case S_BRODCAST:
-                // restart ESP to go out from this mode
+                // Broadcast mode - WiFi is on and game is not running
+                // ESP is in mother`s mode with enabled AP and broadcast settings to all ESPs
+                // To exit from this mode unplugged power and restart ESP
                 Serial.printf("\rS_BRODCAST");
                 settBrodcast();
                 break;
             }
-        }     
-    }  
+        }
+    }
 }
 
 void loop() {}

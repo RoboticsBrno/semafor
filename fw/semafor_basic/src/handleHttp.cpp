@@ -24,12 +24,12 @@ void handleRoot() {
                 "Aktuálně zvolený herní mód: ")) +
         String(stateVector.gameMode);
 
-   
+
     Page += F(
                 "<form method='POST' action='datasave'>");
 
     // Monopoly (0)
-    Page += F( 
+    Page += F(
                 "<h2>Monopoly (0)</h2>"
                 "Přeblikávání mezi červenou a zelenou v náhodném intervalu.<br>"
                 "Minimální doba změny [sekundy]:<br>"
@@ -40,10 +40,10 @@ void handleRoot() {
                 "Maximální doba změny [sekundy]:<br>"
                 "<input type='text' placeholder='");
     Page += String(stateVector.monopolyDelayMax);
-    Page += F(            
+    Page += F(
                 "' name='delayMax'/><br>"
                 "<input type='submit' name='monopoly' value='Ulož a aktivuj monopoly'/><br>");
-    
+
     // Vábička (1)
     Page += F(
                 "<h2>Vábička (1)</h2>"
@@ -68,7 +68,7 @@ void handleRoot() {
                 "Doba dlouhého stisku tlačítka [seku ndy]:<br>"
                 "<input type='text' placeholder='");
     Page += String(stateVector.tdPressLong);
-    Page += F(            
+    Page += F(
                 "' name='pressLong'/><br>"
                 "<input type='submit' name='towerDefence' value='Ulož a aktivuj Tower Defence'/><br>");
 
@@ -80,13 +80,13 @@ void handleRoot() {
     //             "Doba stisku tlačítka [sekundy]:<br>"
     //             "<input type='text' placeholder='");
     // Page += String(stateVector.holdToGetTimeout);
-    // Page += F(            
+    // Page += F(
     //             "' name='holdToGet_press'/><br>"
     //             "<input type='submit' name='holdToGet' value='Ulož a aktivuj Hold to Get'/><br>");
 
 
     // Minutka (5)
-    Page += F( 
+    Page += F(
                 "<h2>Minutka (5)</h2>"
                 "Semafor zhasne všechny LEDky a čeká na zmáčknutí tlačítka, poté se celý rozsvítí.<br>"
                 "Po uplynutí 1/3 času zhasne modrou LEDku, po 2/3 zhasne i zelenou LEDku.<br>"
@@ -99,7 +99,7 @@ void handleRoot() {
                 "<input type='submit' name='minutka' value='Ulož a aktivuj minutku'/><br>");
 
     // Mikrovlnka (5)
-    Page += F( 
+    Page += F(
                 "<h2>Mikrovlnka (6)</h2>"
                 "Semafor rozsvítí všechny LEDky a čeká na zmáčknutí tlačítka, poté se celý zhasne.<br>"
                 "Po uplynutí 1/3 času rozsvítí modrou LEDku, po 2/3 rozsvítí i zelenou LEDku.<br>"
@@ -109,7 +109,7 @@ void handleRoot() {
     Page += String(stateVector.mikrovlnkaTimeSecAll/60);
     Page += F(
                 "' name='mikrovlnkaTimeMinAll'/><br>"
-                "<input type='submit' name='mikrovlnka' value='Ulož a aktivuj mikrovlnku'/><br>");                
+                "<input type='submit' name='mikrovlnka' value='Ulož a aktivuj mikrovlnku'/><br>");
 
     // Nastavení jasu LEDek
     Page += F(
@@ -121,7 +121,7 @@ void handleRoot() {
                 "' name='brightness'/><br>"
                 "<input type='submit' name='led' value='Ulož jas LEDek'/><br>"
                 "<br>");
-    
+
     // End form and page
     Page += F("</form></body></html>");
 
@@ -183,7 +183,7 @@ void handleDataSave() {
     if(temp > 0) {
         stateVector.ledBrightness[0] = temp;
     }
-    
+
     if(server.hasArg("monopoly"))
         stateVector.gameMode = 0;
     else if(server.hasArg("vabicka"))
@@ -231,7 +231,7 @@ void handleAddParam() {
         else {
             initSerial();
         }
-    } 
+    }
 
     server.sendHeader("Location", "/", true);
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -256,7 +256,7 @@ void handleAdmin() {
                 "<title>ADMIN! Semafor manager</title></head><body>"
                 "<h1>ADMIN Nastavení semaforu #");
     Page +=     String(semaforID);
-   
+
     Page += F(
                 "</h1>"
                 "<form method='POST' action='adminsave'>"
@@ -278,7 +278,7 @@ void handleAdmin() {
 
 
     server.send(200, "text/html", Page);
-    server.client().stop(); // Stop is needed because we sent no content length    
+    server.client().stop(); // Stop is needed because we sent no content length
 }
 
 void handleAdminSave() {
@@ -301,8 +301,8 @@ void handleAdminSave() {
         else {
             initLeds();
             stateVector.activeLed = true;
-        }      
-    } 
+        }
+    }
 
     stateVector_eeprom.write();
 
